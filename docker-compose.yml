@@ -1,0 +1,11 @@
+services:
+  websocket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 4000:4000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
