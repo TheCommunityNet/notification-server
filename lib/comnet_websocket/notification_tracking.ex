@@ -7,6 +7,7 @@ defmodule ComnetWebsocket.NotificationTracking do
     field :user_id, :string
     field :device_id, :string
     field :received_at, :utc_datetime
+    field :is_received, :boolean, default: false
 
     timestamps(type: :utc_datetime)
   end
@@ -14,7 +15,7 @@ defmodule ComnetWebsocket.NotificationTracking do
   @doc false
   def changeset(notification_tracking, attrs) do
     notification_tracking
-    |> cast(attrs, [:notification_key, :user_id, :device_id, :received_at])
-    |> validate_required([:notification_key])
+    |> cast(attrs, [:notification_key, :user_id, :device_id, :received_at, :is_received])
+    |> validate_required([:notification_key, :is_received])
   end
 end
