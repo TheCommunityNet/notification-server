@@ -14,5 +14,6 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotificationTrackings do
     create index(:notification_trackings, [:notification_key])
     create index(:notification_trackings, [:user_id])
     create index(:notification_trackings, [:device_id])
+    create index(:notification_trackings, [:received_at])
   end
 end

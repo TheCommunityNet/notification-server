@@ -4,6 +4,7 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotifications do
   def change do
     create table(:notifications) do
       add :key, :uuid, null: false
+      add :type, :string, null: false
       add :payload, :map, null: false
       add :sent_count, :integer
       add :received_count, :integer
@@ -11,6 +12,7 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotifications do
       timestamps(type: :utc_datetime)
     end
 
+    create index(:notifications, [:type])
     create index(:notifications, [:key], unique: true)
   end
 end

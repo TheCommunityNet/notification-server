@@ -7,7 +7,7 @@ defmodule ComnetWebsocketWeb.NotificationController do
         "payload" => %{"title" => _title, "content" => _content} = payload
       }) do
     # save to database
-    case EctoService.save_notification(%{payload: payload}) do
+    case EctoService.save_notification(%{payload: payload, type: "user", user_ids: user_ids}) do
       {:ok, notification} ->
         message = %{
           id: notification.key,
@@ -36,7 +36,12 @@ defmodule ComnetWebsocketWeb.NotificationController do
         "user_id" => user_id,
         "payload" => %{"title" => title, "content" => content} = payload
       }) do
-    case EctoService.save_notification(%{payload: payload, sent_count: 1}) do
+    case EctoService.save_notification(%{
+           payload: payload,
+           sent_count: 1,
+           type: "user",
+           user_id: user_id
+         }) do
       {:ok, notification} ->
         message = %{
           id: notification.key,
@@ -61,7 +66,7 @@ defmodule ComnetWebsocketWeb.NotificationController do
   def send_notification(conn, %{
         "payload" => %{"title" => title, "content" => content} = payload
       }) do
-    case EctoService.save_notification(%{payload: payload}) do
+    case EctoService.save_notification(%{payload: payload, type: "device"}) do
       {:ok, notification} ->
         message = %{
           id: notification.key,

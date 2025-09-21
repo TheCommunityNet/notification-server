@@ -28,7 +28,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
   def handle_in(
         "received",
-        %{"id" => id, "user_id" => user_id, "received_at" => received_at},
+        %{"id" => id, "received_at" => received_at} = payload,
         socket
       ) do
     with {:ok, timestamp} <- parse_timestamp(received_at),
@@ -36,7 +36,8 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
          {:ok, _tracking} <-
            EctoService.save_notification_tracking(%{
              notification_key: id,
-             user_id: user_id,
+             user_id: Map.get(payload, "user_id"),
+             device_id: socket.assigns.device_id,
              received_at: parsed_time
            }) do
       :ok
@@ -62,6 +63,8 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
       online_at: DateTime.utc_now()
     })
 
+    send(self(), :after_connect)
+
     {:reply, {:ok, %{msg: "logged in"}}, assign(socket, :user_id, user_id)}
   end
 
@@ -78,6 +81,42 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         type: if(socket.assigns[:user_id] != nil, do: "user", else: "guest"),
         online_at: DateTime.utc_now()
       })
+
+    # send all notifications for the device
+    case EctoService.get_notifications_for_device(socket.assigns.device_id) do
+      notifications when is_list(notifications) ->
+        Enum.each(notifications, fn notification ->
+          push(socket, "message", %{
+            id: notification.key,
+            title: Map.get(notification.payload, "title"),
+            content: Map.get(notification.payload, "content"),
+            url: Map.get(notification.payload, "url", nil)
+          })
+        end)
+    end
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(:after_connect, socket) do
+    # send all notifications for the device
+    case EctoService.get_notifications_for_user(socket.assigns.user_id) do
+      notifications when is_list(notifications) ->
+        IO.inspect(notifications, label: "notifications")
+
+        Enum.each(notifications, fn notification ->
+          push(socket, "message", %{
+            id: notification.key,
+            title: Map.get(notification.payload, "title"),
+            content: Map.get(notification.payload, "content"),
+            url: Map.get(notification.payload, "url", nil)
+          })
+        end)
+
+      _ ->
+        :ok
+    end
 
     {:noreply, socket}
   end

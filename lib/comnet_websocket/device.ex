@@ -14,5 +14,6 @@ defmodule ComnetWebsocket.Device do
     device
     |> cast(attrs, [:device_id, :last_active_at])
     |> validate_required([:device_id, :last_active_at])
+    |> unique_constraint(:device_id)
   end
 end

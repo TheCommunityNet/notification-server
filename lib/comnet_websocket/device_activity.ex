@@ -15,6 +15,6 @@ defmodule ComnetWebsocket.DeviceActivity do
   def changeset(device_activity, attrs) do
     device_activity
     |> cast(attrs, [:device_id, :connection_id, :started_at, :ended_at])
-    |> validate_required([:device_id, :connection_id, :started_at, :ended_at])
+    |> validate_required([:device_id, :connection_id, :started_at])
   end
 end
