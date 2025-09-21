@@ -25,67 +25,76 @@ defmodule ComnetWebsocket.EctoService do
   end
 
   def save_notification(attrs \\ %{}) do
-    attrs = Map.put(attrs, :key, Ecto.UUID.generate())
-    attrs = Map.put(attrs, :sent_count, 0)
-    attrs = Map.put(attrs, :received_count, 0)
+    attrs =
+      attrs
+      |> Map.put_new(:key, Ecto.UUID.generate())
+      |> Map.put_new(:sent_count, 0)
+      |> Map.put_new(:received_count, 0)
 
+    with {:ok, notification} <- create_notification(attrs),
+         :ok <- create_tracking_records(notification.key, attrs) do
+      {:ok, notification}
+    end
+  end
+
+  defp create_notification(attrs) do
     %ComnetWebsocket.Notification{}
     |> ComnetWebsocket.Notification.changeset(attrs)
     |> ComnetWebsocket.Repo.insert()
-    |> case do
-      {:ok, notification} ->
-        case attrs do
-          %{user_ids: user_ids} ->
-            Enum.each(user_ids, fn user_id ->
-              save_notification_tracking(%{notification_key: notification.key, user_id: user_id})
-            end)
-
-          %{user_id: user_id} ->
-            save_notification_tracking(%{notification_key: notification.key, user_id: user_id})
-
-          _ ->
-            :ok
-        end
-
-        {:ok, notification}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:error, changeset}
-    end
   end
 
+  defp create_tracking_records(notification_key, %{user_ids: user_ids}) when is_list(user_ids) do
+    user_ids
+    |> Enum.each(fn user_id ->
+      save_notification_tracking(%{notification_key: notification_key, user_id: user_id})
+    end)
+
+    :ok
+  end
+
+  defp create_tracking_records(notification_key, %{user_id: user_id}) do
+    save_notification_tracking(%{notification_key: notification_key, user_id: user_id})
+    :ok
+  end
+
+  defp create_tracking_records(_notification_key, _attrs), do: :ok
+
   def save_notification_tracking(attrs \\ %{}) do
-    existing_tracking =
-      case attrs do
-        %{user_id: user_id} ->
-          ComnetWebsocket.Repo.get_by(ComnetWebsocket.NotificationTracking,
-            notification_key: attrs.notification_key,
-            user_id: user_id
-          )
+    attrs
+    |> find_existing_tracking()
+    |> upsert_tracking(attrs)
+  end
 
-        %{device_id: device_id} ->
-          ComnetWebsocket.Repo.get_by(ComnetWebsocket.NotificationTracking,
-            notification_key: attrs.notification_key,
-            device_id: device_id
-          )
+  defp find_existing_tracking(%{user_id: user_id, notification_key: notification_key}) do
+    ComnetWebsocket.Repo.get_by(ComnetWebsocket.NotificationTracking,
+      notification_key: notification_key,
+      user_id: user_id
+    )
+  end
 
-        _ ->
-          nil
-      end
+  defp find_existing_tracking(%{device_id: device_id, notification_key: notification_key}) do
+    ComnetWebsocket.Repo.get_by(ComnetWebsocket.NotificationTracking,
+      notification_key: notification_key,
+      device_id: device_id
+    )
+  end
 
-    if existing_tracking do
-      existing_tracking
-      |> ComnetWebsocket.NotificationTracking.changeset(attrs)
-      |> ComnetWebsocket.Repo.update()
-    else
-      %ComnetWebsocket.NotificationTracking{}
-      |> ComnetWebsocket.NotificationTracking.changeset(attrs)
-      |> ComnetWebsocket.Repo.insert()
-    end
+  defp find_existing_tracking(_attrs), do: nil
+
+  defp upsert_tracking(nil, attrs) do
+    %ComnetWebsocket.NotificationTracking{}
+    |> ComnetWebsocket.NotificationTracking.changeset(attrs)
+    |> ComnetWebsocket.Repo.insert()
+  end
+
+  defp upsert_tracking(existing_tracking, attrs) do
+    existing_tracking
+    |> ComnetWebsocket.NotificationTracking.changeset(attrs)
+    |> ComnetWebsocket.Repo.update()
   end
 
   def save_device(attrs \\ %{}) do
-    attrs = Map.put(attrs, :last_active_at, DateTime.utc_now())
+    attrs = Map.put_new(attrs, :last_active_at, DateTime.utc_now())
 
     %ComnetWebsocket.Device{}
     |> ComnetWebsocket.Device.changeset(attrs)
@@ -96,8 +105,10 @@ defmodule ComnetWebsocket.EctoService do
   end
 
   def save_device_activity(attrs \\ %{}) do
-    attrs = Map.put(attrs, :connection_id, Ecto.UUID.generate())
-    attrs = Map.put(attrs, :started_at, DateTime.utc_now())
+    attrs =
+      attrs
+      |> Map.put_new(:connection_id, Ecto.UUID.generate())
+      |> Map.put_new(:started_at, DateTime.utc_now())
 
     %ComnetWebsocket.DeviceActivity{}
     |> ComnetWebsocket.DeviceActivity.changeset(attrs)
@@ -105,7 +116,7 @@ defmodule ComnetWebsocket.EctoService do
   end
 
   def update_device_activity(attrs \\ %{}) do
-    attrs = Map.put(attrs, :ended_at, DateTime.utc_now())
+    attrs = Map.put_new(attrs, :ended_at, DateTime.utc_now())
 
     ComnetWebsocket.Repo.get_by!(
       ComnetWebsocket.DeviceActivity,
