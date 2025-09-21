@@ -9,10 +9,10 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotificationTrackings do
       add :received_at, :utc_datetime
 
       timestamps(type: :utc_datetime)
-
-      index(:notification_trackings, [:notification_key])
-      index(:notification_trackings, [:user_id])
-      index(:notification_trackings, [:device_id])
     end
+
+    create index(:notification_trackings, [:notification_key])
+    create index(:notification_trackings, [:user_id])
+    create index(:notification_trackings, [:device_id])
   end
 end

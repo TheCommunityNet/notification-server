@@ -9,8 +9,8 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotifications do
       add :received_count, :integer
 
       timestamps(type: :utc_datetime)
-
-      index(:notifications, [:key], unique: true)
     end
+
+    create index(:notifications, [:key], unique: true)
   end
 end

@@ -9,8 +9,8 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateDeviceActivities do
       add :ended_at, :utc_datetime
 
       timestamps(type: :utc_datetime)
-
-      index(:device_activities, [:device_id, :connection_id], unique: true)
     end
+
+    create index(:device_activities, [:device_id, :connection_id], unique: true)
   end
 end
