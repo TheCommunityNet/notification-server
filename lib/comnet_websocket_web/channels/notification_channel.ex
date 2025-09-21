@@ -78,6 +78,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         Enum.each(notifications, fn notification ->
           push(socket, "message", %{
             id: notification.key,
+            category: notification.category,
             title: Map.get(notification.payload, "title"),
             content: Map.get(notification.payload, "content"),
             url: Map.get(notification.payload, "url", nil)
@@ -96,6 +97,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         Enum.each(notifications, fn notification ->
           push(socket, "message", %{
             id: notification.key,
+            category: notification.category,
             title: Map.get(notification.payload, "title"),
             content: Map.get(notification.payload, "content"),
             url: Map.get(notification.payload, "url", nil)
