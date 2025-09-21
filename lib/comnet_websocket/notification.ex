@@ -5,6 +5,7 @@ defmodule ComnetWebsocket.Notification do
   schema "notifications" do
     field :key, Ecto.UUID
     field :type, :string
+    field :category, :string
     field :payload, :map
     field :sent_count, :integer
     field :received_count, :integer
@@ -17,7 +18,24 @@ defmodule ComnetWebsocket.Notification do
   @doc false
   def changeset(notification, attrs) do
     notification
-    |> cast(attrs, [:key, :type, :payload, :sent_count, :received_count, :expired_at, :is_expired])
-    |> validate_required([:key, :type, :sent_count, :received_count, :expired_at, :is_expired])
+    |> cast(attrs, [
+      :key,
+      :type,
+      :category,
+      :payload,
+      :sent_count,
+      :received_count,
+      :expired_at,
+      :is_expired
+    ])
+    |> validate_required([
+      :key,
+      :type,
+      :category,
+      :sent_count,
+      :received_count,
+      :expired_at,
+      :is_expired
+    ])
   end
 end

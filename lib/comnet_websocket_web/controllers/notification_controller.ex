@@ -25,11 +25,19 @@ defmodule ComnetWebsocketWeb.NotificationController do
   defp build_notification_params(%{
          "user_ids" => user_ids,
          "payload" => payload,
-         "expired_at" => expired_at
+         "expired_at" => expired_at,
+         "category" => category
        })
        when is_list(user_ids) and length(user_ids) > 0 do
     if valid_payload?(payload) do
-      {:ok, %{payload: payload, type: "user", user_ids: user_ids, expired_at: expired_at}}
+      {:ok,
+       %{
+         payload: payload,
+         type: "user",
+         user_ids: user_ids,
+         expired_at: expired_at,
+         category: category
+       }}
     else
       {:error, :invalid_params}
     end
@@ -38,19 +46,31 @@ defmodule ComnetWebsocketWeb.NotificationController do
   defp build_notification_params(%{
          "user_id" => user_id,
          "payload" => payload,
-         "expired_at" => expired_at
+         "expired_at" => expired_at,
+         "category" => category
        }) do
     if valid_payload?(payload) do
       {:ok,
-       %{payload: payload, sent_count: 1, type: "user", user_id: user_id, expired_at: expired_at}}
+       %{
+         payload: payload,
+         sent_count: 1,
+         type: "user",
+         user_id: user_id,
+         expired_at: expired_at,
+         category: category
+       }}
     else
       {:error, :invalid_params}
     end
   end
 
-  defp build_notification_params(%{"payload" => payload, "expired_at" => expired_at}) do
+  defp build_notification_params(%{
+         "payload" => payload,
+         "expired_at" => expired_at,
+         "category" => category
+       }) do
     if valid_payload?(payload) do
-      {:ok, %{payload: payload, type: "device", expired_at: expired_at}}
+      {:ok, %{payload: payload, type: "device", expired_at: expired_at, category: category}}
     else
       {:error, :invalid_params}
     end

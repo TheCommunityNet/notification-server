@@ -5,6 +5,7 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotifications do
     create table(:notifications) do
       add :key, :uuid, null: false
       add :type, :string, null: false
+      add :category, :string, null: false
       add :payload, :map, null: false
       add :sent_count, :integer
       add :received_count, :integer
