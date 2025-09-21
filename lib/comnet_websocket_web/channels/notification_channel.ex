@@ -28,7 +28,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
   def handle_in(
         "received",
-        %{"id" => id, "received_at" => received_at} = payload,
+        %{"id" => id, "received_at" => _received_at} = payload,
         socket
       ) do
     EctoService.save_notification_tracking(%{
