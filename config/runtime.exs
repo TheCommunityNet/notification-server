@@ -55,6 +55,8 @@ if config_env() == :prod do
 
   config :comnet_websocket, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  config :comnet_websocket, :api_key, System.get_env("API_KEY") || raise("API_KEY is missing")
+
   config :comnet_websocket, ComnetWebsocketWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [

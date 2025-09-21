@@ -81,7 +81,8 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
             category: notification.category,
             title: Map.get(notification.payload, "title"),
             content: Map.get(notification.payload, "content"),
-            url: Map.get(notification.payload, "url", nil)
+            url: Map.get(notification.payload, "url", nil),
+            is_dialog: notification.category == "emergency"
           })
         end)
     end
@@ -100,7 +101,8 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
             category: notification.category,
             title: Map.get(notification.payload, "title"),
             content: Map.get(notification.payload, "content"),
-            url: Map.get(notification.payload, "url", nil)
+            url: Map.get(notification.payload, "url", nil),
+            is_dialog: notification.category == "emergency"
           })
         end)
 

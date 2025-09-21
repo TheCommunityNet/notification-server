@@ -2,6 +2,8 @@ defmodule ComnetWebsocketWeb.NotificationController do
   use ComnetWebsocketWeb, :controller
   alias ComnetWebsocket.EctoService
 
+  plug ComnetWebsocketWeb.Plugs.ApiKeyAuth when action in [:send_notification]
+
   def send_notification(conn, params) do
     with {:ok, notification_params} <- build_notification_params(params),
          {:ok, notification} <- EctoService.save_notification(notification_params) do
@@ -91,7 +93,9 @@ defmodule ComnetWebsocketWeb.NotificationController do
       id: notification.key,
       title: payload["title"],
       content: payload["content"],
-      url: payload["url"]
+      url: payload["url"],
+      category: notification.category,
+      is_dialog: notification.category == "emergency"
     }
   end
 

@@ -50,6 +50,8 @@ config :comnet_websocket, ComnetWebsocketWeb.Endpoint,
 # different ports.
 
 # Enable dev routes for dashboard and mailbox
+config :comnet_websocket, :api_key, "test_api_key"
+
 config :comnet_websocket, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
