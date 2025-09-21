@@ -31,23 +31,12 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         %{"id" => id, "received_at" => received_at} = payload,
         socket
       ) do
-    with {:ok, timestamp} <- parse_timestamp(received_at),
-         {:ok, parsed_time} <- DateTime.from_unix(timestamp, :millisecond),
-         {:ok, _tracking} <-
-           EctoService.save_notification_tracking(%{
-             notification_key: id,
-             user_id: Map.get(payload, "user_id"),
-             device_id: socket.assigns.device_id,
-             received_at: parsed_time
-           }) do
-      :ok
-    else
-      {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset, label: "error saving notification tracking")
-
-      {:error, reason} when reason in [:invalid_timestamp, :invalid_unix_timestamp] ->
-        IO.inspect(reason, label: "error parsing received_at timestamp")
-    end
+    EctoService.save_notification_tracking(%{
+      notification_key: id,
+      user_id: Map.get(payload, "user_id"),
+      device_id: socket.assigns.device_id,
+      received_at: DateTime.utc_now()
+    })
 
     {:noreply, socket}
   end
