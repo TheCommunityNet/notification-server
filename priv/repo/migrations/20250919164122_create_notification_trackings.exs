@@ -3,13 +3,16 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotificationTrackings do
 
   def change do
     create table(:notification_trackings) do
-      add :notification_key, :uuid
+      add :notification_key, :uuid, null: false
       add :user_id, :string
+      add :device_id, :string
       add :received_at, :utc_datetime
 
       timestamps(type: :utc_datetime)
 
-      index(:notification_trackings, [:notification_key, :user_id], unique: true)
+      index(:notification_trackings, [:notification_key])
+      index(:notification_trackings, [:user_id])
+      index(:notification_trackings, [:device_id])
     end
   end
 end

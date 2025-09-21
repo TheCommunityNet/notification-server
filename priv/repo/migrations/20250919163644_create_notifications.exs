@@ -3,8 +3,8 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotifications do
 
   def change do
     create table(:notifications) do
-      add :key, :uuid
-      add :payload, :map
+      add :key, :uuid, null: false
+      add :payload, :map, null: false
       add :sent_count, :integer
       add :received_count, :integer
 

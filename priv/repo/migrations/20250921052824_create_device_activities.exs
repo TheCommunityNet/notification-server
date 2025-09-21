@@ -1,0 +1,16 @@
+defmodule ComnetWebsocket.Repo.Migrations.CreateDeviceActivities do
+  use Ecto.Migration
+
+  def change do
+    create table(:device_activities) do
+      add :device_id, :string, null: false
+      add :connection_id, :uuid, null: false
+      add :started_at, :utc_datetime, null: false
+      add :ended_at, :utc_datetime
+
+      timestamps(type: :utc_datetime)
+
+      index(:device_activities, [:device_id, :connection_id], unique: true)
+    end
+  end
+end
