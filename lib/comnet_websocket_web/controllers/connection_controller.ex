@@ -20,4 +20,15 @@ defmodule ComnetWebsocketWeb.ConnectionController do
       user_count: user_count
     })
   end
+
+  def active_users(conn, _params) do
+    user_ids =
+      Presence.list("notification")
+      |> Enum.filter(fn {_id, %{metas: [meta | _]}} -> meta.type == "user" end)
+      |> Enum.map(fn {_id, %{metas: [meta | _]}} -> meta.user_id end)
+
+    json(conn, %{
+      user_ids: user_ids
+    })
+  end
 end

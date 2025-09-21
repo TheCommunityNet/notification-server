@@ -7,8 +7,12 @@ defmodule ComnetWebsocketWeb.Router do
 
   scope "/api", ComnetWebsocketWeb do
     pipe_through :api
-    post "/v1/notification/send", NotificationController, :send_notification
-    get "/v1/connection/active", ConnectionController, :active_connections
+
+    scope "/v1" do
+      post "/notification/send", NotificationController, :send_notification
+      get "/connection/active", ConnectionController, :active_connections
+      get "/connection/active/users", ConnectionController, :active_users
+    end
   end
 
   # Enable LiveDashboard in development
