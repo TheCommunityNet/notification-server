@@ -7,6 +7,7 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotificationTrackings do
       add :user_id, :string
       add :device_id, :string
       add :received_at, :utc_datetime
+      add :is_received, :boolean, null: false, default: false
 
       timestamps(type: :utc_datetime)
     end
@@ -14,6 +15,6 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotificationTrackings do
     create index(:notification_trackings, [:notification_key])
     create index(:notification_trackings, [:user_id])
     create index(:notification_trackings, [:device_id])
-    create index(:notification_trackings, [:received_at])
+    create index(:notification_trackings, [:is_received])
   end
 end

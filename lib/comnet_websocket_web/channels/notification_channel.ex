@@ -35,7 +35,8 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
       notification_key: id,
       user_id: Map.get(payload, "user_id"),
       device_id: socket.assigns.device_id,
-      received_at: DateTime.utc_now()
+      received_at: DateTime.utc_now(),
+      is_received: true
     })
 
     {:noreply, socket}
