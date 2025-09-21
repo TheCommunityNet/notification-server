@@ -8,6 +8,7 @@ defmodule ComnetWebsocket.Notification do
     field :payload, :map
     field :sent_count, :integer
     field :received_count, :integer
+    field :expired_at, :utc_datetime
 
     timestamps(type: :utc_datetime)
   end
@@ -15,7 +16,7 @@ defmodule ComnetWebsocket.Notification do
   @doc false
   def changeset(notification, attrs) do
     notification
-    |> cast(attrs, [:key, :type, :payload, :sent_count, :received_count])
-    |> validate_required([:key, :type, :sent_count, :received_count])
+    |> cast(attrs, [:key, :type, :payload, :sent_count, :received_count, :expired_at])
+    |> validate_required([:key, :type, :sent_count, :received_count, :expired_at])
   end
 end
