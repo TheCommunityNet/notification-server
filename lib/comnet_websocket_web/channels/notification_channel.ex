@@ -109,15 +109,4 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
     {:noreply, socket}
   end
-
-  defp parse_timestamp(timestamp) when is_integer(timestamp), do: {:ok, timestamp}
-
-  defp parse_timestamp(timestamp) when is_binary(timestamp) do
-    case Integer.parse(timestamp) do
-      {int, ""} -> {:ok, int}
-      _ -> {:error, :invalid_timestamp}
-    end
-  end
-
-  defp parse_timestamp(_), do: {:error, :invalid_timestamp}
 end
