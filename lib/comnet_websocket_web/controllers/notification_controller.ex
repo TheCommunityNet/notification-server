@@ -2,85 +2,98 @@ defmodule ComnetWebsocketWeb.NotificationController do
   use ComnetWebsocketWeb, :controller
   alias ComnetWebsocket.EctoService
 
-  def send_notification(conn, %{
-        "user_ids" => [_user_id | _] = user_ids,
-        "payload" => %{"title" => _title, "content" => _content} = payload
-      }) do
-    # save to database
-    case EctoService.save_notification(%{payload: payload, type: "user", user_ids: user_ids}) do
-      {:ok, notification} ->
-        message = %{
-          id: notification.key,
-          title: Map.get(payload, "title"),
-          content: Map.get(payload, "content"),
-          url: Map.get(payload, "url", nil)
-        }
-
-        # Broadcast to all specified users
-        Enum.each(user_ids, fn user_id ->
-          Phoenix.PubSub.broadcast(
-            ComnetWebsocket.PubSub,
-            "user:#{user_id}",
-            {:broadcast, message}
-          )
-        end)
-
-        json(conn, %{message: message})
+  def send_notification(conn, params) do
+    with {:ok, notification_params} <- build_notification_params(params),
+         {:ok, notification} <- EctoService.save_notification(notification_params) do
+      message = build_message(notification, params["payload"])
+      broadcast_notification(params, message)
+      json(conn, %{message: message})
+    else
+      {:error, :invalid_params} ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "Invalid parameters"})
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        json(conn, %{error: changeset})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: changeset})
     end
   end
 
-  def send_notification(conn, %{
-        "user_id" => user_id,
-        "payload" => %{"title" => title, "content" => content} = payload
-      }) do
-    case EctoService.save_notification(%{
-           payload: payload,
-           sent_count: 1,
-           type: "user",
-           user_id: user_id
-         }) do
-      {:ok, notification} ->
-        message = %{
-          id: notification.key,
-          title: title,
-          content: content,
-          url: Map.get(payload, "url", nil)
-        }
-
-        Phoenix.PubSub.broadcast(
-          ComnetWebsocket.PubSub,
-          "user:#{user_id}",
-          {:broadcast, message}
-        )
-
-        json(conn, %{message: message})
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        json(conn, %{error: changeset})
+  # Build notification parameters based on input type
+  defp build_notification_params(%{
+         "user_ids" => user_ids,
+         "payload" => payload,
+         "expired_at" => expired_at
+       })
+       when is_list(user_ids) and length(user_ids) > 0 do
+    if valid_payload?(payload) do
+      {:ok, %{payload: payload, type: "user", user_ids: user_ids, expired_at: expired_at}}
+    else
+      {:error, :invalid_params}
     end
   end
 
-  def send_notification(conn, %{
-        "payload" => %{"title" => title, "content" => content} = payload
-      }) do
-    case EctoService.save_notification(%{payload: payload, type: "device"}) do
-      {:ok, notification} ->
-        message = %{
-          id: notification.key,
-          title: title,
-          content: content,
-          url: Map.get(payload, "url", nil)
-        }
-
-        ComnetWebsocketWeb.Endpoint.broadcast("notification", "message", message)
-
-        json(conn, %{message: message})
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        json(conn, %{error: changeset})
+  defp build_notification_params(%{
+         "user_id" => user_id,
+         "payload" => payload,
+         "expired_at" => expired_at
+       }) do
+    if valid_payload?(payload) do
+      {:ok,
+       %{payload: payload, sent_count: 1, type: "user", user_id: user_id, expired_at: expired_at}}
+    else
+      {:error, :invalid_params}
     end
+  end
+
+  defp build_notification_params(%{"payload" => payload, "expired_at" => expired_at}) do
+    if valid_payload?(payload) do
+      {:ok, %{payload: payload, type: "device", expired_at: expired_at}}
+    else
+      {:error, :invalid_params}
+    end
+  end
+
+  defp build_notification_params(_), do: {:error, :invalid_params}
+
+  # Validate payload has required fields
+  defp valid_payload?(%{"title" => title, "content" => content})
+       when is_binary(title) and is_binary(content),
+       do: true
+
+  defp valid_payload?(_), do: false
+
+  # Build the message map from notification and payload
+  defp build_message(notification, payload) do
+    %{
+      id: notification.key,
+      title: payload["title"],
+      content: payload["content"],
+      url: payload["url"]
+    }
+  end
+
+  # Handle broadcasting based on notification type
+  defp broadcast_notification(%{"user_ids" => user_ids}, message) when is_list(user_ids) do
+    Enum.each(user_ids, &broadcast_to_user(&1, message))
+  end
+
+  defp broadcast_notification(%{"user_id" => user_id}, message) do
+    broadcast_to_user(user_id, message)
+  end
+
+  defp broadcast_notification(_, message) do
+    ComnetWebsocketWeb.Endpoint.broadcast("notification", "message", message)
+  end
+
+  # Helper to broadcast to a specific user
+  defp broadcast_to_user(user_id, message) do
+    Phoenix.PubSub.broadcast(
+      ComnetWebsocket.PubSub,
+      "user:#{user_id}",
+      {:broadcast, message}
+    )
   end
 end
