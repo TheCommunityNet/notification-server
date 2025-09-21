@@ -93,8 +93,6 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
     # send all notifications for the device
     case EctoService.get_notifications_for_user(socket.assigns.user_id) do
       notifications when is_list(notifications) ->
-        IO.inspect(notifications, label: "notifications")
-
         Enum.each(notifications, fn notification ->
           push(socket, "message", %{
             id: notification.key,

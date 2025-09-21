@@ -4,11 +4,10 @@ defmodule ComnetWebsocket.EctoService do
   def get_notifications_for_device(device_id) do
     query =
       from n in ComnetWebsocket.Notification,
-        select: {n.key, n.payload},
         where: n.type == "device",
         left_join: nt in ComnetWebsocket.NotificationTracking,
         on: nt.notification_key == n.key and nt.device_id == ^device_id,
-        where: not nt.is_received and not n.is_expired and n.expired_at > ^DateTime.utc_now()
+        where: is_nil(nt.is_received) and not n.is_expired and n.expired_at > ^DateTime.utc_now()
 
     ComnetWebsocket.Repo.all(query)
   end
@@ -66,14 +65,16 @@ defmodule ComnetWebsocket.EctoService do
     |> upsert_tracking(attrs)
   end
 
-  defp find_existing_tracking(%{user_id: user_id, notification_key: notification_key}) do
+  defp find_existing_tracking(%{user_id: user_id, notification_key: notification_key})
+       when not is_nil(user_id) do
     ComnetWebsocket.Repo.get_by(ComnetWebsocket.NotificationTracking,
       notification_key: notification_key,
       user_id: user_id
     )
   end
 
-  defp find_existing_tracking(%{device_id: device_id, notification_key: notification_key}) do
+  defp find_existing_tracking(%{device_id: device_id, notification_key: notification_key})
+       when not is_nil(device_id) do
     ComnetWebsocket.Repo.get_by(ComnetWebsocket.NotificationTracking,
       notification_key: notification_key,
       device_id: device_id
