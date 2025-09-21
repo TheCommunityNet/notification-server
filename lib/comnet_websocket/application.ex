@@ -13,6 +13,7 @@ defmodule ComnetWebsocket.Application do
       {DNSCluster, query: Application.get_env(:comnet_websocket, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: ComnetWebsocket.PubSub},
       ComnetWebsocketWeb.Presence,
+      ComnetWebsocket.NotificationCheckExpireScheduler,
       # Start a worker by calling: ComnetWebsocket.Worker.start_link(arg)
       # {ComnetWebsocket.Worker, arg},
       # Start to serve requests, typically the last entry

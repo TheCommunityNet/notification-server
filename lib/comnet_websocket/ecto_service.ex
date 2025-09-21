@@ -4,9 +4,9 @@ defmodule ComnetWebsocket.EctoService do
   def get_notifications_for_device(device_id) do
     query =
       from n in ComnetWebsocket.Notification,
-        where: n.type == "device",
         left_join: nt in ComnetWebsocket.NotificationTracking,
         on: nt.notification_key == n.key and nt.device_id == ^device_id,
+        where: n.type == "device",
         where: is_nil(nt.is_received) and not n.is_expired and n.expired_at > ^DateTime.utc_now()
 
     ComnetWebsocket.Repo.all(query)
@@ -15,10 +15,10 @@ defmodule ComnetWebsocket.EctoService do
   def get_notifications_for_user(user_id) do
     query =
       from n in ComnetWebsocket.Notification,
-        where: n.type == "user",
         left_join: nt in ComnetWebsocket.NotificationTracking,
         on: nt.notification_key == n.key,
         where: nt.user_id == ^user_id,
+        where: n.type == "user",
         where: not nt.is_received and not n.is_expired and n.expired_at > ^DateTime.utc_now()
 
     ComnetWebsocket.Repo.all(query)
@@ -127,5 +127,14 @@ defmodule ComnetWebsocket.EctoService do
     )
     |> ComnetWebsocket.DeviceActivity.changeset(attrs)
     |> ComnetWebsocket.Repo.update()
+  end
+
+  def update_expired_notifications do
+    query =
+      from n in ComnetWebsocket.Notification,
+        where: not n.is_expired,
+        where: n.expired_at < ^DateTime.utc_now()
+
+    ComnetWebsocket.Repo.update_all(query, set: [is_expired: true])
   end
 end
