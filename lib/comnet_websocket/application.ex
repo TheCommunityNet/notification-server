@@ -1,22 +1,37 @@
 defmodule ComnetWebsocket.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
-  @moduledoc false
+  @moduledoc """
+  The ComnetWebsocket Application.
+
+  This module defines the application's supervision tree and startup behavior.
+  It manages all the core services including the database, WebSocket channels,
+  notification services, and HTTP endpoints.
+  """
 
   use Application
 
   @impl true
   def start(_type, _args) do
     children = [
+      # Telemetry and monitoring
       ComnetWebsocketWeb.Telemetry,
+
+      # Database
       ComnetWebsocket.Repo,
+
+      # Clustering
       {DNSCluster, query: Application.get_env(:comnet_websocket, :dns_cluster_query) || :ignore},
+
+      # PubSub for real-time communication
       {Phoenix.PubSub, name: ComnetWebsocket.PubSub},
+
+      # Presence tracking
       ComnetWebsocketWeb.Presence,
+
+      # Background services
       ComnetWebsocket.NotificationCheckExpireScheduler,
-      # Start a worker by calling: ComnetWebsocket.Worker.start_link(arg)
-      # {ComnetWebsocket.Worker, arg},
-      # Start to serve requests, typically the last entry
+      {ComnetWebsocket.ChannelWatcher, :notification},
+
+      # HTTP endpoint (typically the last entry)
       ComnetWebsocketWeb.Endpoint
     ]
 
@@ -26,8 +41,19 @@ defmodule ComnetWebsocket.Application do
     Supervisor.start_link(children, opts)
   end
 
-  # Tell Phoenix to update the endpoint configuration
-  # whenever the application is updated.
+  @doc """
+  Handles configuration changes.
+
+  Tells Phoenix to update the endpoint configuration whenever the application is updated.
+
+  ## Parameters
+  - `changed` - Changed configuration
+  - `_new` - New configuration (unused)
+  - `removed` - Removed configuration
+
+  ## Returns
+  - `:ok`
+  """
   @impl true
   def config_change(changed, _new, removed) do
     ComnetWebsocketWeb.Endpoint.config_change(changed, removed)

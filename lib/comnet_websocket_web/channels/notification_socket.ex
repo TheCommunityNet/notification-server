@@ -1,20 +1,29 @@
 defmodule ComnetWebsocketWeb.NotificationSocket do
+  @moduledoc """
+  WebSocket socket for handling notification connections.
+
+  This socket manages WebSocket connections and handles device registration
+  and activity tracking when devices connect.
+  """
+
   use Phoenix.Socket
-  alias ComnetWebsocket.EctoService
+  alias ComnetWebsocket.DeviceService
+  require Logger
+
   channel "notification", ComnetWebsocketWeb.NotificationChannel
 
   @impl true
   def connect(%{"device_id" => device_id}, socket, _connect_info) do
     socket = assign(socket, :device_id, device_id)
 
-    EctoService.save_device(%{device_id: device_id})
+    DeviceService.save_device(%{device_id: device_id})
 
-    case EctoService.save_device_activity(%{device_id: device_id}) do
+    case DeviceService.save_device_activity(%{device_id: device_id}) do
       {:ok, device_activity} ->
         assign(socket, :connection_id, device_activity.connection_id)
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset, label: "error saving device activity")
+        Logger.error("Failed to save device activity: #{inspect(changeset)}")
     end
 
     {:ok, socket}

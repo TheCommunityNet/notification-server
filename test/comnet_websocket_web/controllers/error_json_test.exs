@@ -2,7 +2,9 @@ defmodule ComnetWebsocketWeb.ErrorJSONTest do
   use ComnetWebsocketWeb.ConnCase, async: true
 
   test "renders 404" do
-    assert ComnetWebsocketWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}
+    assert ComnetWebsocketWeb.ErrorJSON.render("404.json", %{}) == %{
+             errors: %{detail: "Not Found"}
+           }
   end
 
   test "renders 500" do

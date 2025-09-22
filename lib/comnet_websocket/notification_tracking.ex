@@ -1,6 +1,24 @@
 defmodule ComnetWebsocket.NotificationTracking do
+  @moduledoc """
+  Schema for notification tracking.
+
+  Tracks the delivery and receipt status of notifications for specific
+  users or devices.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
+
+  @type t :: %__MODULE__{
+          id: integer() | nil,
+          notification_key: Ecto.UUID.t() | nil,
+          user_id: String.t() | nil,
+          device_id: String.t() | nil,
+          received_at: DateTime.t() | nil,
+          is_received: boolean(),
+          inserted_at: DateTime.t() | nil,
+          updated_at: DateTime.t() | nil
+        }
 
   schema "notification_trackings" do
     field :notification_key, Ecto.UUID
@@ -12,7 +30,17 @@ defmodule ComnetWebsocket.NotificationTracking do
     timestamps(type: :utc_datetime)
   end
 
-  @doc false
+  @doc """
+  Creates a changeset for notification tracking.
+
+  ## Parameters
+  - `notification_tracking` - The notification tracking struct
+  - `attrs` - The attributes to change
+
+  ## Returns
+  - A changeset
+  """
+  @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(notification_tracking, attrs) do
     notification_tracking
     |> cast(attrs, [:notification_key, :user_id, :device_id, :received_at, :is_received])

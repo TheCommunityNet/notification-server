@@ -1,6 +1,13 @@
 defmodule ComnetWebsocketWeb.NotificationChannel do
+  @moduledoc """
+  WebSocket channel for handling real-time notifications.
+
+  This channel manages WebSocket connections for notifications, including
+  user authentication, presence tracking, and message broadcasting.
+  """
+
   use ComnetWebsocketWeb, :channel
-  alias ComnetWebsocket.EctoService
+  alias ComnetWebsocket.{NotificationService, Constants}
   alias ComnetWebsocketWeb.Presence
 
   @pubsub ComnetWebsocket.PubSub
@@ -31,7 +38,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         %{"id" => id, "received_at" => _received_at} = payload,
         socket
       ) do
-    EctoService.save_notification_tracking(%{
+    NotificationService.save_notification_tracking(%{
       notification_key: id,
       user_id: Map.get(payload, "user_id"),
       device_id: socket.assigns.device_id,
@@ -48,14 +55,14 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
     Presence.untrack(socket, socket.assigns.device_id)
 
     Presence.track(socket, socket.assigns.device_id, %{
-      type: "user",
+      type: Constants.presence_type_user(),
       user_id: user_id,
       online_at: DateTime.utc_now()
     })
 
     send(self(), :after_connect)
 
-    {:reply, {:ok, %{msg: "logged in"}}, assign(socket, :user_id, user_id)}
+    {:reply, {:ok, %{msg: Constants.api_message_logged_in()}}, assign(socket, :user_id, user_id)}
   end
 
   @impl true
@@ -66,24 +73,22 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
   @impl true
   def handle_info(:after_join, socket) do
+    presence_type =
+      if socket.assigns[:user_id] != nil,
+        do: Constants.presence_type_user(),
+        else: Constants.presence_type_guest()
+
     {:ok, _} =
       Presence.track(socket, socket.assigns.device_id, %{
-        type: if(socket.assigns[:user_id] != nil, do: "user", else: "guest"),
+        type: presence_type,
         online_at: DateTime.utc_now()
       })
 
     # send all notifications for the device
-    case EctoService.get_notifications_for_device(socket.assigns.device_id) do
+    case NotificationService.get_notifications_for_device(socket.assigns.device_id) do
       notifications when is_list(notifications) ->
         Enum.each(notifications, fn notification ->
-          push(socket, "message", %{
-            id: notification.key,
-            category: notification.category,
-            title: Map.get(notification.payload, "title"),
-            content: Map.get(notification.payload, "content"),
-            url: Map.get(notification.payload, "url", nil),
-            is_dialog: notification.category == "emergency"
-          })
+          push(socket, "message", build_notification_message(notification))
         end)
     end
 
@@ -92,18 +97,11 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
   @impl true
   def handle_info(:after_connect, socket) do
-    # send all notifications for the device
-    case EctoService.get_notifications_for_user(socket.assigns.user_id) do
+    # send all notifications for the user
+    case NotificationService.get_notifications_for_user(socket.assigns.user_id) do
       notifications when is_list(notifications) ->
         Enum.each(notifications, fn notification ->
-          push(socket, "message", %{
-            id: notification.key,
-            category: notification.category,
-            title: Map.get(notification.payload, "title"),
-            content: Map.get(notification.payload, "content"),
-            url: Map.get(notification.payload, "url", nil),
-            is_dialog: notification.category == "emergency"
-          })
+          push(socket, "message", build_notification_message(notification))
         end)
 
       _ ->
@@ -111,5 +109,19 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
     end
 
     {:noreply, socket}
+  end
+
+  # Private helper functions
+
+  @spec build_notification_message(ComnetWebsocket.Notification.t()) :: map()
+  defp build_notification_message(notification) do
+    %{
+      id: notification.key,
+      category: notification.category,
+      title: Map.get(notification.payload, "title"),
+      content: Map.get(notification.payload, "content"),
+      url: Map.get(notification.payload, "url", nil),
+      is_dialog: notification.category == Constants.notification_category_emergency()
+    }
   end
 end

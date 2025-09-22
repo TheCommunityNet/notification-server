@@ -1,6 +1,27 @@
 defmodule ComnetWebsocket.Notification do
+  @moduledoc """
+  Schema for notifications.
+
+  Represents a notification that can be sent to users or devices.
+  Notifications can have different types (user/device) and categories.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
+
+  @type t :: %__MODULE__{
+          id: integer() | nil,
+          key: Ecto.UUID.t() | nil,
+          type: String.t() | nil,
+          category: String.t() | nil,
+          payload: map() | nil,
+          sent_count: integer() | nil,
+          received_count: integer() | nil,
+          expired_at: DateTime.t() | nil,
+          is_expired: boolean(),
+          inserted_at: DateTime.t() | nil,
+          updated_at: DateTime.t() | nil
+        }
 
   schema "notifications" do
     field :key, Ecto.UUID
@@ -15,7 +36,17 @@ defmodule ComnetWebsocket.Notification do
     timestamps(type: :utc_datetime)
   end
 
-  @doc false
+  @doc """
+  Creates a changeset for a notification.
+
+  ## Parameters
+  - `notification` - The notification struct
+  - `attrs` - The attributes to change
+
+  ## Returns
+  - A changeset
+  """
+  @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(notification, attrs) do
     notification
     |> cast(attrs, [

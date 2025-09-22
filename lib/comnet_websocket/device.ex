@@ -1,6 +1,21 @@
 defmodule ComnetWebsocket.Device do
+  @moduledoc """
+  Schema for devices.
+
+  Represents a device that can connect to the WebSocket service.
+  Tracks device activity and connection status.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
+
+  @type t :: %__MODULE__{
+          id: integer() | nil,
+          device_id: String.t() | nil,
+          last_active_at: DateTime.t() | nil,
+          inserted_at: DateTime.t() | nil,
+          updated_at: DateTime.t() | nil
+        }
 
   schema "devices" do
     field :device_id, :string
@@ -9,7 +24,17 @@ defmodule ComnetWebsocket.Device do
     timestamps(type: :utc_datetime)
   end
 
-  @doc false
+  @doc """
+  Creates a changeset for a device.
+
+  ## Parameters
+  - `device` - The device struct
+  - `attrs` - The attributes to change
+
+  ## Returns
+  - A changeset
+  """
+  @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(device, attrs) do
     device
     |> cast(attrs, [:device_id, :last_active_at])
