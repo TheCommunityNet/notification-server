@@ -29,7 +29,7 @@ defmodule ComnetWebsocket.Application do
 
       # Background services
       ComnetWebsocket.NotificationCheckExpireScheduler,
-      {ComnetWebsocket.ChannelWatcher, :notification},
+      {ComnetWebsocket.ChannelWatcher, :notifications},
 
       # HTTP endpoint (typically the last entry)
       ComnetWebsocketWeb.Endpoint

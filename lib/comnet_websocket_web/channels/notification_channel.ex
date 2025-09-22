@@ -7,6 +7,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
   """
 
   use ComnetWebsocketWeb, :channel
+  alias ComnetWebsocket.DeviceService
   alias ComnetWebsocket.{NotificationService, Constants}
   alias ComnetWebsocketWeb.Presence
 
@@ -84,6 +85,12 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         online_at: DateTime.utc_now()
       })
 
+    ComnetWebsocket.ChannelWatcher.monitor(
+      :notifications,
+      self(),
+      {__MODULE__, :leave, [socket.assigns.device_id, socket.assigns.connection_id]}
+    )
+
     # send all notifications for the device
     case NotificationService.get_notifications_for_device(socket.assigns.device_id) do
       notifications when is_list(notifications) ->
@@ -103,12 +110,23 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         Enum.each(notifications, fn notification ->
           push(socket, "message", build_notification_message(notification))
         end)
-
-      _ ->
-        :ok
     end
 
     {:noreply, socket}
+  end
+
+  def leave(device_id, connection_id) do
+    case DeviceService.update_device_activity(%{
+           device_id: device_id,
+           connection_id: connection_id,
+           ended_at: DateTime.utc_now()
+         }) do
+      {:ok, _} ->
+        :ok
+
+      {:error, _} ->
+        :ok
+    end
   end
 
   # Private helper functions

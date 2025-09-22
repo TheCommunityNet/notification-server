@@ -18,13 +18,15 @@ defmodule ComnetWebsocketWeb.NotificationSocket do
 
     DeviceService.save_device(%{device_id: device_id})
 
-    case DeviceService.save_device_activity(%{device_id: device_id}) do
-      {:ok, device_activity} ->
-        assign(socket, :connection_id, device_activity.connection_id)
+    socket =
+      case DeviceService.save_device_activity(%{device_id: device_id}) do
+        {:ok, device_activity} ->
+          assign(socket, :connection_id, device_activity.connection_id)
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        Logger.error("Failed to save device activity: #{inspect(changeset)}")
-    end
+        {:error, %Ecto.Changeset{} = changeset} ->
+          Logger.error("Failed to save device activity: #{inspect(changeset)}")
+          socket
+      end
 
     {:ok, socket}
   end
