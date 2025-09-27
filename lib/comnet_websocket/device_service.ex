@@ -17,6 +17,7 @@ defmodule ComnetWebsocket.DeviceService do
           optional(:device_id) => String.t(),
           optional(:connection_id) => String.t(),
           optional(:started_at) => DateTime.t(),
+          optional(:user_id) => String.t(),
           optional(:ended_at) => DateTime.t()
         }
 
@@ -86,8 +87,6 @@ defmodule ComnetWebsocket.DeviceService do
   """
   @spec update_device_activity(device_activity_attrs()) :: device_activity_result()
   def update_device_activity(attrs \\ %{}) do
-    attrs = Map.put_new(attrs, :ended_at, DateTime.utc_now())
-
     Repo.get_by!(
       DeviceActivity,
       device_id: attrs.device_id,

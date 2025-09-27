@@ -105,6 +105,12 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
   @impl true
   def handle_info(:after_connect, socket) do
     # send all notifications for the user
+    DeviceService.update_device_activity(%{
+      device_id: socket.assigns.device_id,
+      connection_id: socket.assigns.connection_id,
+      user_id: socket.assigns.user_id
+    })
+
     case NotificationService.get_notifications_for_user(socket.assigns.user_id) do
       notifications when is_list(notifications) ->
         Enum.each(notifications, fn notification ->
