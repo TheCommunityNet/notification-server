@@ -7,6 +7,8 @@ defmodule ComnetWebsocketWeb.NotificationChannelTest do
       |> socket("device_id", %{device_id: "test-device-123"})
       |> subscribe_and_join(ComnetWebsocketWeb.NotificationChannel, "notification")
 
+    # Add connection_id to the socket assigns for testing
+    socket = Phoenix.Socket.assign(socket, :connection_id, "test-connection-123")
     %{socket: socket}
   end
 
@@ -34,8 +36,10 @@ defmodule ComnetWebsocketWeb.NotificationChannelTest do
 
   test "received message saves notification tracking", %{socket: socket} do
     push(socket, "received", %{
-      "id" => "notification-123",
-      "received_at" => "2023-01-01T00:00:00Z"
+      "device_id" => "test-device-123",
+      "notification_id" => "notification-123",
+      "received_at" => 1_759_409_332_113,
+      "sent_at" => 1_759_409_332_113
     })
 
     # The function should complete without error

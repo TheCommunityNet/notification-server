@@ -7,6 +7,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
   """
 
   use ComnetWebsocketWeb, :channel
+  require Logger
   alias ComnetWebsocket.DeviceService
   alias ComnetWebsocket.{NotificationService, Constants}
   alias ComnetWebsocketWeb.Presence
@@ -36,18 +37,36 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
   def handle_in(
         "received",
-        %{"id" => id, "received_at" => _received_at} = payload,
+        %{
+          "device_id" => device_id,
+          "notification_id" => notification_id,
+          "received_at" => received_at,
+          "sent_at" => sent_at
+        } = payload,
         socket
       ) do
-    NotificationService.save_notification_tracking(%{
-      notification_key: id,
-      user_id: Map.get(payload, "user_id"),
-      device_id: socket.assigns.device_id,
-      received_at: DateTime.utc_now(),
-      is_received: true
-    })
+    IO.inspect(payload, label: "received")
 
-    {:noreply, socket}
+    with {:ok, received_at} <- parse_timestamp(received_at),
+         {:ok, sent_at} <- parse_timestamp(sent_at) do
+      now_timestamp = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+      diff_timestamp = now_timestamp - sent_at
+      received_at = DateTime.from_unix!(received_at + diff_timestamp, :millisecond)
+
+      NotificationService.save_notification_tracking(%{
+        notification_key: notification_id,
+        user_id: Map.get(payload, "user_id"),
+        device_id: device_id,
+        received_at: received_at,
+        is_received: true
+      })
+
+      {:noreply, socket}
+    else
+      {:error, :invalid_timestamp} ->
+        Logger.error("Invalid timestamp for notification_id: #{notification_id}")
+        {:noreply, socket}
+    end
   end
 
   def handle_in("connect", %{"user_id" => user_id}, socket) do
@@ -88,7 +107,8 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
     ComnetWebsocket.ChannelWatcher.monitor(
       :notifications,
       self(),
-      {__MODULE__, :leave, [socket.assigns.device_id, socket.assigns.connection_id]}
+      {__MODULE__, :leave,
+       [socket.assigns.device_id, Map.get(socket.assigns, :connection_id, nil)]}
     )
 
     # send all notifications for the device
@@ -122,16 +142,20 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
   end
 
   def leave(device_id, connection_id) do
-    case DeviceService.update_device_activity(%{
-           device_id: device_id,
-           connection_id: connection_id,
-           ended_at: DateTime.utc_now()
-         }) do
-      {:ok, _} ->
-        :ok
+    if connection_id do
+      case DeviceService.update_device_activity(%{
+             device_id: device_id,
+             connection_id: connection_id,
+             ended_at: DateTime.utc_now()
+           }) do
+        {:ok, _} ->
+          :ok
 
-      {:error, _} ->
-        :ok
+        {:error, _} ->
+          :ok
+      end
+    else
+      :ok
     end
   end
 
@@ -148,4 +172,15 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
       is_dialog: notification.category == Constants.notification_category_emergency()
     }
   end
+
+  defp parse_timestamp(timestamp) when is_integer(timestamp), do: {:ok, timestamp}
+
+  defp parse_timestamp(timestamp) when is_binary(timestamp) do
+    case Integer.parse(timestamp) do
+      {int, ""} -> {:ok, int}
+      _ -> {:error, :invalid_timestamp}
+    end
+  end
+
+  defp parse_timestamp(_), do: {:error, :invalid_timestamp}
 end
