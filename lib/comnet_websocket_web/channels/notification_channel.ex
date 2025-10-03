@@ -133,6 +133,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
     case NotificationService.get_notifications_for_user(socket.assigns.user_id) do
       notifications when is_list(notifications) ->
+        IO.inspect(notifications, label: "notifications")
         # Separate emergency and non-emergency notifications
         {emergency_notifications, other_notifications} =
           Enum.split_with(notifications, fn notification ->
@@ -153,16 +154,19 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
           # Update all notifications in this group with the group_key
           notification_keys = Enum.map(category_notifications, & &1.key)
+
           NotificationService.update_notifications_group_key(notification_keys, group_key)
 
+          [first_notification | _] = category_notifications
           # Send all notifications of the same category as a group
           push(socket, "message", %{
             id: group_key,
             category: category,
             is_dialog: false,
-            title: category_notifications.first().title,
-            content: category_notifications.first().content,
-            url: category_notifications.first().url
+            title: Map.get(first_notification.payload, "title"),
+            content: Map.get(first_notification.payload, "content"),
+            url: Map.get(first_notification.payload, "url"),
+            timestamp: first_notification.inserted_at |> DateTime.to_unix(:millisecond)
           })
         end)
     end
@@ -198,7 +202,8 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
       title: Map.get(notification.payload, "title"),
       content: Map.get(notification.payload, "content"),
       url: Map.get(notification.payload, "url", nil),
-      is_dialog: notification.category == Constants.notification_category_emergency()
+      is_dialog: notification.category == Constants.notification_category_emergency(),
+      timestamp: notification.inserted_at |> DateTime.to_unix(:millisecond)
     }
   end
 
