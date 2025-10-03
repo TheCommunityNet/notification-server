@@ -48,6 +48,15 @@ defmodule ComnetWebsocket.NotificationService do
     Repo.all(query)
   end
 
+  @doc """
+  Retrieves notifications by group_key.
+
+  ## Parameters
+  - `group_key` - The group key to search for
+
+  ## Returns
+  - List of notifications with the specified group_key
+  """
   @spec get_notification_by_group_key(String.t()) :: [Notification.t()]
   def get_notification_by_group_key(group_key) do
     Repo.all_by(Notification, group_key: group_key)
