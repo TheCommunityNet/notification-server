@@ -7,5 +7,11 @@ services:
       - 4000:4000
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    environment:
+      ERL_MAX_PORTS: 65536
     env_file:
       - .env
