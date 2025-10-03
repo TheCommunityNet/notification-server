@@ -11,6 +11,14 @@ defmodule ComnetWebsocket.Application do
 
   @impl true
   def start(_type, _args) do
+    :logger.add_handler(:my_sentry_handler, Sentry.LoggerHandler, %{
+      config: %{
+        metadata: [:file, :line],
+        rate_limiting: [max_events: 10, interval: _1_second = 1_000],
+        capture_log_messages: true
+      }
+    })
+
     children = [
       # Telemetry and monitoring
       ComnetWebsocketWeb.Telemetry,
