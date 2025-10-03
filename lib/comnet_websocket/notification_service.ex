@@ -48,6 +48,42 @@ defmodule ComnetWebsocket.NotificationService do
     Repo.all(query)
   end
 
+  @spec get_notification_by_group_key(String.t()) :: [Notification.t()]
+  def get_notification_by_group_key(group_key) do
+    Repo.all_by(Notification, group_key: group_key)
+  end
+
+  @doc """
+  Retrieves a notification by its key.
+
+  ## Parameters
+  - `key` - The notification key
+
+  ## Returns
+  - The notification or nil if not found
+  """
+  @spec get_notification_by_key(String.t()) :: Notification.t() | nil
+  def get_notification_by_key(key) do
+    Repo.get_by(Notification, key: key)
+  end
+
+  @doc """
+  Updates multiple notifications with the same group_key.
+
+  ## Parameters
+  - `notification_keys` - List of notification keys to update
+  - `group_key` - The group key to assign to all notifications
+
+  ## Returns
+  - `{count, nil}` - Number of notifications updated
+  """
+  @spec update_notifications_group_key([String.t()], String.t()) :: {integer(), nil}
+  def update_notifications_group_key(notification_keys, group_key) do
+    query = from n in Notification, where: n.key in ^notification_keys
+
+    Repo.update_all(query, set: [group_key: group_key])
+  end
+
   @doc """
   Retrieves notifications for a specific user.
 

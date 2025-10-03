@@ -133,8 +133,37 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
     case NotificationService.get_notifications_for_user(socket.assigns.user_id) do
       notifications when is_list(notifications) ->
-        Enum.each(notifications, fn notification ->
+        # Separate emergency and non-emergency notifications
+        {emergency_notifications, other_notifications} =
+          Enum.split_with(notifications, fn notification ->
+            notification.category == Constants.notification_category_emergency()
+          end)
+
+        # Send emergency notifications immediately, one by one
+        Enum.each(emergency_notifications, fn notification ->
           push(socket, "message", build_notification_message(notification))
+        end)
+
+        # Group other notifications by category and send as groups
+        other_notifications
+        |> Enum.group_by(fn notification -> notification.category end)
+        |> Enum.each(fn {category, category_notifications} ->
+          # Generate a UUID for this group
+          group_key = Ecto.UUID.generate()
+
+          # Update all notifications in this group with the group_key
+          notification_keys = Enum.map(category_notifications, & &1.key)
+          NotificationService.update_notifications_group_key(notification_keys, group_key)
+
+          # Send all notifications of the same category as a group
+          push(socket, "message", %{
+            id: group_key,
+            category: category,
+            is_dialog: false,
+            title: category_notifications.first().title,
+            content: category_notifications.first().content,
+            url: category_notifications.first().url
+          })
         end)
     end
 

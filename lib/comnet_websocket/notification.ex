@@ -12,6 +12,7 @@ defmodule ComnetWebsocket.Notification do
   @type t :: %__MODULE__{
           id: integer() | nil,
           key: Ecto.UUID.t() | nil,
+          group_key: String.t() | nil,
           type: String.t() | nil,
           category: String.t() | nil,
           payload: map() | nil,
@@ -25,6 +26,7 @@ defmodule ComnetWebsocket.Notification do
 
   schema "notifications" do
     field :key, Ecto.UUID
+    field :group_key, :string
     field :type, :string
     field :category, :string
     field :payload, :map
@@ -51,6 +53,7 @@ defmodule ComnetWebsocket.Notification do
     notification
     |> cast(attrs, [
       :key,
+      :group_key,
       :type,
       :category,
       :payload,
