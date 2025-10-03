@@ -174,7 +174,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         |> Enum.group_by(fn notification -> notification.category end)
         |> Enum.each(fn {category, category_notifications} ->
           # Generate a UUID for this group
-          group_key = Ecto.UUID.generate()
+          group_key = "g-" <> Ecto.UUID.generate()
 
           # Update all notifications in this group with the group_key
           notification_keys = Enum.map(category_notifications, & &1.key)
