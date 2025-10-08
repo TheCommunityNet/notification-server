@@ -63,8 +63,8 @@ defmodule ComnetWebsocketWeb.ConnectionController do
       |> Enum.map(fn {_id, %{metas: [meta | _]}} ->
         %{
           user_id: meta.user_id,
-          device_id: meta.device_id,
-          connection_id: meta.connection_id
+          device_id: Map.get(meta, :device_id, nil),
+          connection_id: Map.get(meta, :connection_id, nil)
         }
       end)
 
