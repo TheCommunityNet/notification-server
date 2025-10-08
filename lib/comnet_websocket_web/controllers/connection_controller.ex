@@ -60,10 +60,10 @@ defmodule ComnetWebsocketWeb.ConnectionController do
       |> Enum.filter(fn {_id, %{metas: [meta | _]}} ->
         meta.type == Constants.presence_type_user()
       end)
-      |> Enum.map(fn {_id, %{metas: [meta | _]}} ->
+      |> Enum.map(fn {id, %{metas: [meta | _]}} ->
         %{
           user_id: meta.user_id,
-          device_id: Map.get(meta, :device_id, nil),
+          device_id: id,
           connection_id: Map.get(meta, :connection_id, nil)
         }
       end)

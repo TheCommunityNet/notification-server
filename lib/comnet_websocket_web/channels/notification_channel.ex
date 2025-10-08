@@ -125,6 +125,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
     {:ok, _} =
       Presence.track(socket, socket.assigns.device_id, %{
         type: presence_type,
+        connection_id: socket.assigns.connection_id,
         online_at: DateTime.utc_now()
       })
 
