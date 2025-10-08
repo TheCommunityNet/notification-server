@@ -30,4 +30,27 @@ defmodule ComnetWebsocketWeb.Router do
       live_dashboard "/dashboard", metrics: ComnetWebsocketWeb.Telemetry
     end
   end
+
+  if Mix.env() == :prod do
+    import Phoenix.LiveDashboard.Router
+    import Plug.BasicAuth
+
+    defp dashboard_auth_plug(conn, _opts) do
+      dashboard_auth = Application.get_env(:comnet_websocket, :dashboard_auth, [])
+
+      Plug.BasicAuth.basic_auth(conn,
+        username: dashboard_auth[:username],
+        password: dashboard_auth[:password]
+      )
+    end
+
+    pipeline :dashboard_auth do
+      plug :dashboard_auth_plug
+    end
+
+    scope "/dashboard" do
+      pipe_through [:fetch_session, :dashboard_auth]
+      live_dashboard "/", metrics: ComnetWebsocketWeb.Telemetry
+    end
+  end
 end

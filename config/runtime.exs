@@ -57,6 +57,17 @@ if config_env() == :prod do
 
   config :comnet_websocket, :api_key, System.get_env("API_KEY") || raise("API_KEY is missing")
 
+  # Dashboard authentication credentials
+  dashboard_username =
+    System.get_env("DASHBOARD_USERNAME") || raise("DASHBOARD_USERNAME is missing")
+
+  dashboard_password =
+    System.get_env("DASHBOARD_PASSWORD") || raise("DASHBOARD_PASSWORD is missing")
+
+  config :comnet_websocket, :dashboard_auth,
+    username: dashboard_username,
+    password: dashboard_password
+
   config :comnet_websocket, ComnetWebsocketWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
