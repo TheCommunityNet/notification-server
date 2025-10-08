@@ -55,15 +55,21 @@ defmodule ComnetWebsocketWeb.ConnectionController do
   """
   @spec active_users(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def active_users(conn, _params) do
-    user_ids =
+    users =
       Presence.list("notification")
       |> Enum.filter(fn {_id, %{metas: [meta | _]}} ->
         meta.type == Constants.presence_type_user()
       end)
-      |> Enum.map(fn {_id, %{metas: [meta | _]}} -> meta.user_id end)
+      |> Enum.map(fn {_id, %{metas: [meta | _]}} ->
+        %{
+          user_id: meta.user_id,
+          device_id: meta.device_id,
+          connection_id: meta.connection_id
+        }
+      end)
 
     json(conn, %{
-      user_ids: user_ids
+      users: users
     })
   end
 end
