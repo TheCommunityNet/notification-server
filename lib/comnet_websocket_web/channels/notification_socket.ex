@@ -13,17 +13,17 @@ defmodule ComnetWebsocketWeb.NotificationSocket do
   channel "notification", ComnetWebsocketWeb.NotificationChannel
 
   @impl true
-  def connect(%{"device_id" => device_id}, socket, %{peer_data: %{address: ip}}) do
+  def connect(%{"device_id" => device_id}, socket, _connect_info) do
     # if device_id == "4db7879518da3afa" or device_id == "2a2f1f7d4eadcd57" do
     #   {:error, %{reason: "unauthorized"}}
     # else
-    ip_str = :inet.ntoa(ip) |> to_string()
+    # ip_str = :inet.ntoa(ip) |> to_string()
     socket = assign(socket, :device_id, device_id)
 
     DeviceService.save_device(%{device_id: device_id})
 
     socket =
-      case DeviceService.save_device_activity(%{device_id: device_id, ip_address: ip_str}) do
+      case DeviceService.save_device_activity(%{device_id: device_id}) do
         {:ok, device_activity} ->
           assign(socket, :connection_id, device_activity.connection_id)
 
