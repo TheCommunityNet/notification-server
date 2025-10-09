@@ -17,7 +17,7 @@ defmodule ComnetWebsocketWeb.Endpoint do
     longpoll: [connect_info: [session: @session_options]]
 
   socket "/socket", ComnetWebsocketWeb.NotificationSocket,
-    websocket: true,
+    websocket: [connect_info: [:peer_data, :x_headers]],
     longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
