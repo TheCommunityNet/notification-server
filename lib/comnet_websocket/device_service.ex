@@ -18,7 +18,8 @@ defmodule ComnetWebsocket.DeviceService do
           optional(:connection_id) => String.t(),
           optional(:started_at) => DateTime.t(),
           optional(:user_id) => String.t(),
-          optional(:ended_at) => DateTime.t()
+          optional(:ended_at) => DateTime.t(),
+          optional(:ip_address) => String.t()
         }
 
   @type device_result :: {:ok, Device.t()} | {:error, Ecto.Changeset.t()}
