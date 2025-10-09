@@ -14,9 +14,10 @@ defmodule ComnetWebsocketWeb.NotificationSocket do
 
   @impl true
   def connect(%{"device_id" => device_id}, socket, connect_info) do
-    socket = assign(socket, :device_id, device_id)
-
     ip_address = get_ip_address(connect_info)
+
+    socket = assign(socket, :device_id, device_id)
+    socket = assign(socket, :ip_address, ip_address)
 
     DeviceService.save_device(%{device_id: device_id})
 
