@@ -57,13 +57,14 @@ defmodule ComnetWebsocketWeb.ConnectionController do
   def active_users(conn, _params) do
     users =
       Presence.list("notification")
-      |> Enum.filter(fn {_id, %{metas: [meta | _]}} ->
-        meta.type == Constants.presence_type_user()
-      end)
+      # |> Enum.filter(fn {_id, %{metas: [meta | _]}} ->
+      #   meta.type == Constants.presence_type_user()
+      # end)
       |> Enum.map(fn {id, %{metas: [meta | _]}} ->
         %{
-          user_id: meta.user_id,
           device_id: id,
+          user_id: Map.get(meta, :user_id, nil),
+          ip_address: Map.get(meta, :ip_address, nil),
           connection_id: Map.get(meta, :connection_id, nil)
         }
       end)
