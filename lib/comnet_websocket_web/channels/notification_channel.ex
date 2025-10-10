@@ -101,6 +101,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
     Presence.track(socket, socket.assigns.device_id, %{
       type: Constants.presence_type_user(),
       user_id: user_id,
+      connection_id: socket.assigns.connection_id,
       ip_address: socket.assigns.ip_address,
       online_at: DateTime.utc_now()
     })

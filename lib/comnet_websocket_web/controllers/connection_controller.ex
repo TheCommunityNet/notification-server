@@ -53,11 +53,19 @@ defmodule ComnetWebsocketWeb.ConnectionController do
         # Use user_id from meta if available, otherwise fall back to device_activities
         user_id = Map.get(meta, :user_id) || Map.get(device_user_map, id)
 
+        online_at = Map.get(meta, :online_at, nil)
+
+        uptime =
+          if online_at,
+            do: DateTime.diff(DateTime.utc_now(), online_at, :second),
+            else: nil
+
         %{
           device_id: id,
           user_id: user_id,
           ip_address: Map.get(meta, :ip_address, nil),
-          connection_id: Map.get(meta, :connection_id, nil)
+          connection_id: Map.get(meta, :connection_id, nil),
+          uptime: uptime
         }
       end)
 
