@@ -58,7 +58,8 @@ defmodule ComnetWebsocketWeb.ConnectionController do
             %{online_at: online_at} ->
               online_at
               |> DateTime.diff(DateTime.utc_now(), :second)
-              |> then(fn uptime -> "#{div(uptime, 60)}m #{rem(uptime, 60)}s" end)
+              |> abs()
+              |> ComnetWebsocket.Utils.TimeUtils.format_uptime()
 
             _ ->
               nil
