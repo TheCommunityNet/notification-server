@@ -7,6 +7,7 @@ defmodule ComnetWebsocket.DeviceService do
   """
 
   alias ComnetWebsocket.{Device, DeviceActivity, Repo}
+  import Ecto.Query
 
   @type device_attrs :: %{
           optional(:device_id) => String.t(),
@@ -24,6 +25,7 @@ defmodule ComnetWebsocket.DeviceService do
 
   @type device_result :: {:ok, Device.t()} | {:error, Ecto.Changeset.t()}
   @type device_activity_result :: {:ok, DeviceActivity.t()} | {:error, Ecto.Changeset.t()}
+  @type device_user_map :: %{String.t() => String.t()}
 
   @doc """
   Saves or updates a device record.
@@ -95,5 +97,27 @@ defmodule ComnetWebsocket.DeviceService do
     )
     |> DeviceActivity.changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Gets user IDs for a list of device IDs from device activities.
+
+  Queries the device_activities table to find user_id values for the given
+  device_ids. Only returns device_ids that have a non-nil user_id.
+
+  ## Parameters
+  - `device_ids` - List of device IDs to look up
+
+  ## Returns
+  - Map where keys are device_ids and values are user_ids
+  """
+  @spec get_user_ids_by_device_ids([String.t()]) :: device_user_map()
+  def get_user_ids_by_device_ids(device_ids) when is_list(device_ids) do
+    from(da in DeviceActivity,
+      where: da.device_id in ^device_ids and not is_nil(da.user_id),
+      select: {da.device_id, da.user_id}
+    )
+    |> Repo.all()
+    |> Map.new()
   end
 end
