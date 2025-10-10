@@ -11,16 +11,6 @@ defmodule ComnetWebsocketWeb.ConnectionController do
   alias ComnetWebsocket.Constants
   alias ComnetWebsocket.DeviceService
 
-  @doc """
-  Returns statistics about active connections.
-
-  ## Parameters
-  - `conn` - The connection
-  - `_params` - Request parameters (unused)
-
-  ## Returns
-  - JSON response with connection statistics
-  """
   @spec active_connections(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def active_connections(conn, _params) do
     all = Presence.list("notification")
@@ -44,16 +34,6 @@ defmodule ComnetWebsocketWeb.ConnectionController do
     })
   end
 
-  @doc """
-  Returns a list of active user IDs.
-
-  ## Parameters
-  - `conn` - The connection
-  - `_params` - Request parameters (unused)
-
-  ## Returns
-  - JSON response with list of active user IDs
-  """
   @spec active_users(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def active_users(conn, _params) do
     device_ids =
@@ -62,7 +42,6 @@ defmodule ComnetWebsocketWeb.ConnectionController do
         id
       end)
 
-    # Get user_ids for the device_ids from device_activities
     device_user_map = DeviceService.get_user_ids_by_device_ids(device_ids)
 
     users =
