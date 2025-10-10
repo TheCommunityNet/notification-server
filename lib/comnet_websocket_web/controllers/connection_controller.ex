@@ -58,7 +58,7 @@ defmodule ComnetWebsocketWeb.ConnectionController do
   def active_users(conn, _params) do
     device_ids =
       Presence.list("notification")
-      |> Enum.map(fn {id} ->
+      |> Enum.map(fn {id, _} ->
         id
       end)
 
