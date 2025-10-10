@@ -6,13 +6,12 @@ defmodule ComnetWebsocket.Utils.TimeUtils do
     minutes = div(rem(uptime, 3600), 60)
     seconds = rem(uptime, 60)
 
-    str = ""
+    parts = []
+    parts = if days > 0, do: parts ++ ["#{days}d"], else: parts
+    parts = if hours > 0, do: parts ++ ["#{hours}h"], else: parts
+    parts = if minutes > 0, do: parts ++ ["#{minutes}m"], else: parts
+    parts = if seconds > 0, do: parts ++ ["#{seconds}s"], else: parts
 
-    if days > 0, do: str <> "#{days}d", else: str
-    if hours > 0, do: str <> "#{hours}h", else: str
-    if minutes > 0, do: str <> "#{minutes}m", else: str
-    if seconds > 0, do: str <> "#{seconds}s", else: str
-
-    str
+    Enum.join(parts, "")
   end
 end
