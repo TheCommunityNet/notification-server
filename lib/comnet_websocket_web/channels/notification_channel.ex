@@ -45,8 +45,6 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         } = payload,
         socket
       ) do
-    IO.inspect(payload, label: "received")
-
     with {:ok, received_at} <- parse_timestamp(received_at),
          {:ok, sent_at} <- parse_timestamp(sent_at) do
       now_timestamp = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
@@ -161,7 +159,6 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
     case NotificationService.get_notifications_for_user(socket.assigns.user_id) do
       notifications when is_list(notifications) ->
-        IO.inspect(notifications, label: "notifications")
         # Separate emergency and non-emergency notifications
         {emergency_notifications, other_notifications} =
           Enum.split_with(notifications, fn notification ->
