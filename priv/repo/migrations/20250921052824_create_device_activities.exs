@@ -4,7 +4,7 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateDeviceActivities do
   def change do
     create table(:device_activities) do
       add :device_id, :string, null: false
-      add :user_id, :string, null: false
+      add :user_id, :string
       add :connection_id, :uuid, null: false
       add :ip_address, :string
       add :started_at, :utc_datetime, null: false
