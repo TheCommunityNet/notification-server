@@ -90,13 +90,19 @@ defmodule ComnetWebsocket.DeviceService do
   """
   @spec update_device_activity(device_activity_attrs()) :: device_activity_result()
   def update_device_activity(attrs \\ %{}) do
-    Repo.get_by!(
-      DeviceActivity,
-      device_id: attrs.device_id,
-      connection_id: attrs.connection_id
-    )
-    |> DeviceActivity.changeset(attrs)
-    |> Repo.update()
+    case Repo.get_by(
+           DeviceActivity,
+           device_id: attrs.device_id,
+           connection_id: attrs.connection_id
+         ) do
+      nil ->
+        {:error, :not_found}
+
+      device_activity ->
+        device_activity
+        |> DeviceActivity.changeset(attrs)
+        |> Repo.update()
+    end
   end
 
   @doc """
