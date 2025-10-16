@@ -10,14 +10,14 @@ defmodule ComnetWebsocket.Device do
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
-          id: ComnetWebsocket.ULIDType.t() | nil,
+          id: binary() | nil,
           device_id: String.t() | nil,
           last_active_at: DateTime.t() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
 
-  @primary_key {:id, ComnetWebsocket.ULIDType, autogenerate: true}
+  @primary_key {:id, Ecto.ULID, autogenerate: true}
   schema "devices" do
     field :device_id, :string
     field :last_active_at, :utc_datetime

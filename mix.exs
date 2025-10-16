@@ -51,7 +51,8 @@ defmodule ComnetWebsocket.MixProject do
       {:bandit, "~> 1.5"},
       {:sentry, "~> 11.0.4"},
       {:hackney, "~> 1.20"},
-      {:ulid, "~> 0.2.0"}
+      {:ulid, "~> 0.2.0"},
+      {:ecto_ulid, "~> 0.2.0"}
     ]
   end
 

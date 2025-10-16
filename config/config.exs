@@ -22,6 +22,9 @@ config :comnet_websocket, ComnetWebsocketWeb.Endpoint,
   pubsub_server: ComnetWebsocket.PubSub,
   live_view: [signing_salt: "w+lPYe6m"]
 
+config :comnet_websocket, ComnetWebsocket.Repo,
+  migration_primary_key: [name: :id, type: :binary_id]
+
 # Configures Elixir's Logger
 config :logger, :default_formatter,
   format: "$time $metadata[$level] $message\n",

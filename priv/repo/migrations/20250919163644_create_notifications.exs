@@ -4,6 +4,7 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotifications do
   def change do
     create table(:notifications) do
       add :key, :uuid, null: false
+      add :group_key, :string
       add :type, :string, null: false
       add :category, :string, null: false
       add :payload, :map, null: false
@@ -18,5 +19,6 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateNotifications do
     create index(:notifications, [:type])
     create index(:notifications, [:key], unique: true)
     create index(:notifications, [:is_expired])
+    create index(:notifications, [:group_key])
   end
 end
