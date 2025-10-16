@@ -10,7 +10,7 @@ defmodule ComnetWebsocket.NotificationTracking do
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
-          id: Ecto.UUID.t() | nil,
+          id: ComnetWebsocket.ULIDType.t() | nil,
           notification_key: Ecto.UUID.t() | nil,
           user_id: String.t() | nil,
           device_id: String.t() | nil,
@@ -20,7 +20,7 @@ defmodule ComnetWebsocket.NotificationTracking do
           updated_at: DateTime.t() | nil
         }
 
-  @primary_key {:id, :binary_id, autogenerate: true}
+  @primary_key {:id, ComnetWebsocket.ULIDType, autogenerate: true}
   schema "notification_trackings" do
     field :notification_key, Ecto.UUID
     field :user_id, :string

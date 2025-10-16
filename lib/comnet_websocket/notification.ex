@@ -10,7 +10,7 @@ defmodule ComnetWebsocket.Notification do
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
-          id: Ecto.UUID.t() | nil,
+          id: ComnetWebsocket.ULIDType.t() | nil,
           key: Ecto.UUID.t() | nil,
           group_key: String.t() | nil,
           type: String.t() | nil,
@@ -24,7 +24,7 @@ defmodule ComnetWebsocket.Notification do
           updated_at: DateTime.t() | nil
         }
 
-  @primary_key {:id, :binary_id, autogenerate: true}
+  @primary_key {:id, ComnetWebsocket.ULIDType, autogenerate: true}
   schema "notifications" do
     field :key, Ecto.UUID
     field :group_key, :string

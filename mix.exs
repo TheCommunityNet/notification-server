@@ -50,7 +50,8 @@ defmodule ComnetWebsocket.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:sentry, "~> 11.0.4"},
-      {:hackney, "~> 1.20"}
+      {:hackney, "~> 1.20"},
+      {:ulid, "~> 0.2.0"}
     ]
   end
 

@@ -10,7 +10,7 @@ defmodule ComnetWebsocket.DeviceActivity do
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
-          id: Ecto.UUID.t() | nil,
+          id: ComnetWebsocket.ULIDType.t() | nil,
           device_id: String.t() | nil,
           ip_address: String.t() | nil,
           connection_id: Ecto.UUID.t() | nil,
@@ -21,7 +21,7 @@ defmodule ComnetWebsocket.DeviceActivity do
           updated_at: DateTime.t() | nil
         }
 
-  @primary_key {:id, :binary_id, autogenerate: true}
+  @primary_key {:id, ComnetWebsocket.ULIDType, autogenerate: true}
   schema "device_activities" do
     field :device_id, :string
     field :ip_address, :string
