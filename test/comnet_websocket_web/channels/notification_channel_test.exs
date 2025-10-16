@@ -2,13 +2,18 @@ defmodule ComnetWebsocketWeb.NotificationChannelTest do
   use ComnetWebsocketWeb.ChannelCase
 
   setup do
-    {:ok, _, socket} =
+    # Create a socket with connection_id assigned before joining
+    connection_id = Ecto.UUID.generate()
+
+    socket =
       ComnetWebsocketWeb.NotificationSocket
       |> socket("device_id", %{device_id: "test-device-123"})
-      |> subscribe_and_join(ComnetWebsocketWeb.NotificationChannel, "notification")
+      |> Phoenix.Socket.assign(:connection_id, connection_id)
+      |> Phoenix.Socket.assign(:ip_address, "127.0.0.1")
 
-    # Add connection_id to the socket assigns for testing
-    socket = Phoenix.Socket.assign(socket, :connection_id, "test-connection-123")
+    {:ok, _, socket} =
+      subscribe_and_join(socket, ComnetWebsocketWeb.NotificationChannel, "notification")
+
     %{socket: socket}
   end
 
