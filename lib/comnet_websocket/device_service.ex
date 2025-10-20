@@ -11,14 +11,16 @@ defmodule ComnetWebsocket.DeviceService do
 
   @type device_attrs :: %{
           optional(:device_id) => String.t(),
+          optional(:version) => String.t(),
           optional(:last_active_at) => DateTime.t()
         }
 
   @type device_activity_attrs :: %{
           optional(:device_id) => String.t(),
           optional(:connection_id) => String.t(),
-          optional(:started_at) => DateTime.t(),
           optional(:user_id) => String.t(),
+          optional(:version) => String.t(),
+          optional(:started_at) => DateTime.t(),
           optional(:ended_at) => DateTime.t(),
           optional(:ip_address) => String.t()
         }

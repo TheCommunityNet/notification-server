@@ -15,6 +15,7 @@ defmodule ComnetWebsocket.DeviceActivity do
           ip_address: String.t() | nil,
           connection_id: Ecto.UUID.t() | nil,
           user_id: String.t() | nil,
+          version: String.t() | nil,
           started_at: DateTime.t() | nil,
           ended_at: DateTime.t() | nil,
           inserted_at: DateTime.t() | nil,
@@ -27,6 +28,7 @@ defmodule ComnetWebsocket.DeviceActivity do
     field :ip_address, :string
     field :connection_id, Ecto.UUID
     field :user_id, :string
+    field :version, :string
     field :started_at, :utc_datetime
     field :ended_at, :utc_datetime
 
@@ -46,7 +48,15 @@ defmodule ComnetWebsocket.DeviceActivity do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(device_activity, attrs) do
     device_activity
-    |> cast(attrs, [:device_id, :ip_address, :connection_id, :user_id, :started_at, :ended_at])
+    |> cast(attrs, [
+      :device_id,
+      :ip_address,
+      :connection_id,
+      :user_id,
+      :version,
+      :started_at,
+      :ended_at
+    ])
     |> validate_required([:device_id, :connection_id, :started_at])
   end
 end

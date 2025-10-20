@@ -6,6 +6,7 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateDeviceActivities do
       add :device_id, :string, null: false
       add :user_id, :string
       add :connection_id, :uuid, null: false
+      add :version, :string
       add :ip_address, :string
       add :started_at, :utc_datetime, null: false
       add :ended_at, :utc_datetime

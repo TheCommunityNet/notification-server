@@ -13,13 +13,13 @@ defmodule ComnetWebsocketWeb.NotificationSocket do
   channel "notification", ComnetWebsocketWeb.NotificationChannel
 
   @impl true
-  def connect(%{"device_id" => device_id}, socket, connect_info) do
+  def connect(%{"device_id" => device_id} = payload, socket, connect_info) do
     ip_address = get_ip_address(connect_info)
 
     socket = assign(socket, :device_id, device_id)
     socket = assign(socket, :ip_address, ip_address)
 
-    DeviceService.save_device(%{device_id: device_id})
+    DeviceService.save_device(%{device_id: device_id, version: Map.get(payload, "version")})
 
     socket =
       case DeviceService.save_device_activity(%{device_id: device_id, ip_address: ip_address}) do
