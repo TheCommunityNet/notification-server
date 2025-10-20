@@ -19,10 +19,14 @@ defmodule ComnetWebsocketWeb.NotificationSocket do
     socket = assign(socket, :device_id, device_id)
     socket = assign(socket, :ip_address, ip_address)
 
-    DeviceService.save_device(%{device_id: device_id, version: Map.get(payload, "version")})
+    DeviceService.save_device(%{device_id: device_id})
 
     socket =
-      case DeviceService.save_device_activity(%{device_id: device_id, ip_address: ip_address}) do
+      case DeviceService.save_device_activity(%{
+             device_id: device_id,
+             ip_address: ip_address,
+             version: Map.get(payload, "version")
+           }) do
         {:ok, device_activity} ->
           assign(socket, :connection_id, device_activity.connection_id)
 

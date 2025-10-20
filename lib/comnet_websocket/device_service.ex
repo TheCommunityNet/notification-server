@@ -11,7 +11,6 @@ defmodule ComnetWebsocket.DeviceService do
 
   @type device_attrs :: %{
           optional(:device_id) => String.t(),
-          optional(:version) => String.t(),
           optional(:last_active_at) => DateTime.t()
         }
 
