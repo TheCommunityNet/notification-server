@@ -47,11 +47,11 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
     end
   end
 
-  def matrix_notify(conn, {}) do
+  def matrix_notify(conn, _params) do
+    # Matrix Push Gateway expects a response with rejected pushkeys
+    # For now, we accept all notifications and return empty rejected array
     json(conn, %{
-      unifiedpush: %{
-        gateway: "matrix"
-      }
+      rejected: []
     })
   end
 end
