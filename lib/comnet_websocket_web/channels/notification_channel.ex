@@ -125,6 +125,9 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
         online_at: DateTime.utc_now()
       })
 
+    # Subscribe to device-specific notifications
+    :ok = Phoenix.PubSub.subscribe(@pubsub, "device:#{socket.assigns.device_id}")
+
     ComnetWebsocket.ChannelWatcher.monitor(
       :notifications,
       self(),

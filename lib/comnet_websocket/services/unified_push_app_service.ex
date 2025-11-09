@@ -63,4 +63,34 @@ defmodule ComnetWebsocket.Services.UnifiedPushAppService do
         Repo.delete(unified_push_app)
     end
   end
+
+  @doc """
+  Finds a unified push app by pushkey.
+
+  The pushkey can match either app_id or connector_token.
+
+  ## Parameters
+  - `pushkey` - The pushkey to search for
+
+  ## Returns
+  - `{:ok, unified_push_app}` - Unified push app found
+  - `{:error, :not_found}` - Unified push app not found
+  """
+  @spec find_unified_push_app_by_pushkey(String.t()) :: unified_push_app_result()
+  def find_unified_push_app_by_pushkey(pushkey) do
+    import Ecto.Query
+
+    query =
+      from upa in UnifiedPushApp,
+        where: upa.app_id == ^pushkey or upa.connector_token == ^pushkey,
+        limit: 1
+
+    case Repo.one(query) do
+      nil ->
+        {:error, :not_found}
+
+      unified_push_app ->
+        {:ok, unified_push_app}
+    end
+  end
 end
