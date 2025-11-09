@@ -65,6 +65,7 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
     #     ]
     #   }
     # }
+    IO.inspect(params, label: "params")
     notification = params["notification"]
 
     if notification && is_map(notification) do
