@@ -5,8 +5,8 @@ defmodule ComnetWebsocketWeb.Router do
     plug :accepts, ["json"]
   end
 
-  get "/_matrix/push/v1/notify", ComnetWebsocketWeb.UnifiedPushAppController, :matrix_notify_check
-  post "/_matrix/push/v1/notify", ComnetWebsocketWeb.UnifiedPushAppController, :matrix_notify
+  get "/_matrix/push/v1/notify", ComnetWebsocketWeb.UnifiedPushController, :check
+  post "/_matrix/push/v1/notify", ComnetWebsocketWeb.UnifiedPushController, :send_notification
 
   scope "/api", ComnetWebsocketWeb do
     pipe_through :api
