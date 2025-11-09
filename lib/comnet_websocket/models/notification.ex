@@ -1,4 +1,4 @@
-defmodule ComnetWebsocket.Notification do
+defmodule ComnetWebsocket.Models.Notification do
   @moduledoc """
   Schema for notifications.
 

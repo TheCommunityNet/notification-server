@@ -1,4 +1,4 @@
-defmodule ComnetWebsocket.NotificationTracking do
+defmodule ComnetWebsocket.Models.NotificationTracking do
   @moduledoc """
   Schema for notification tracking.
 

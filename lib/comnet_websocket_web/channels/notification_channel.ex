@@ -8,8 +8,8 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
   use ComnetWebsocketWeb, :channel
   require Logger
-  alias ComnetWebsocket.DeviceService
-  alias ComnetWebsocket.{NotificationService, Constants}
+  alias ComnetWebsocket.{Constants}
+  alias ComnetWebsocket.Services.{DeviceService, NotificationService}
   alias ComnetWebsocketWeb.Presence
 
   @pubsub ComnetWebsocket.PubSub
@@ -214,7 +214,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
   # Private helper functions
 
-  @spec build_notification_message(ComnetWebsocket.Notification.t()) :: map()
+  @spec build_notification_message(ComnetWebsocket.Models.Notification.t()) :: map()
   defp build_notification_message(notification) do
     %{
       id: notification.key,

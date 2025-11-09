@@ -9,7 +9,7 @@ defmodule ComnetWebsocketWeb.ConnectionController do
   use ComnetWebsocketWeb, :controller
   alias ComnetWebsocketWeb.Presence
   alias ComnetWebsocket.Constants
-  alias ComnetWebsocket.DeviceService
+  alias ComnetWebsocket.Services.DeviceService
 
   @spec active_connections(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def active_connections(conn, _params) do

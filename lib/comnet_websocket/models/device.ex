@@ -1,4 +1,4 @@
-defmodule ComnetWebsocket.Device do
+defmodule ComnetWebsocket.Models.Device do
   @moduledoc """
   Schema for devices.
 

@@ -1,4 +1,4 @@
-defmodule ComnetWebsocket.DeviceActivity do
+defmodule ComnetWebsocket.Models.DeviceActivity do
   @moduledoc """
   Schema for device activities.
 

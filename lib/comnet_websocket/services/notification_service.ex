@@ -1,4 +1,4 @@
-defmodule ComnetWebsocket.NotificationService do
+defmodule ComnetWebsocket.Services.NotificationService do
   @moduledoc """
   Service module for managing notifications.
 
@@ -7,7 +7,8 @@ defmodule ComnetWebsocket.NotificationService do
   """
 
   import Ecto.Query, only: [from: 2]
-  alias ComnetWebsocket.{Notification, NotificationTracking, Repo, Constants}
+  alias ComnetWebsocket.{Repo, Constants}
+  alias ComnetWebsocket.Models.{Notification, NotificationTracking}
 
   @type notification_attrs :: %{
           optional(:key) => String.t(),

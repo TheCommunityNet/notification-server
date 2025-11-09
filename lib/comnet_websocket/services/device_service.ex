@@ -1,4 +1,4 @@
-defmodule ComnetWebsocket.DeviceService do
+defmodule ComnetWebsocket.Services.DeviceService do
   @moduledoc """
   Service module for managing devices and device activities.
 
@@ -6,7 +6,8 @@ defmodule ComnetWebsocket.DeviceService do
   device registration, activity tracking, and connection management.
   """
 
-  alias ComnetWebsocket.{Device, DeviceActivity, Repo}
+  alias ComnetWebsocket.{Repo}
+  alias ComnetWebsocket.Models.{Device, DeviceActivity}
   import Ecto.Query
 
   @type device_attrs :: %{

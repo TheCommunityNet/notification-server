@@ -7,7 +7,8 @@ defmodule ComnetWebsocketWeb.NotificationController do
   """
 
   use ComnetWebsocketWeb, :controller
-  alias ComnetWebsocket.{NotificationService, Constants}
+  alias ComnetWebsocket.{Constants}
+  alias ComnetWebsocket.Services.NotificationService
 
   plug ComnetWebsocketWeb.Plugs.ApiKeyAuth when action in [:send_notification]
 
@@ -114,7 +115,7 @@ defmodule ComnetWebsocketWeb.NotificationController do
   defp valid_payload?(_), do: false
 
   # Build the message map from notification and payload
-  @spec build_message(ComnetWebsocket.Notification.t(), map()) :: map()
+  @spec build_message(ComnetWebsocket.Models.Notification.t(), map()) :: map()
   defp build_message(notification, payload) do
     %{
       id: notification.key,

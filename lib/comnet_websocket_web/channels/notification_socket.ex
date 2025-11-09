@@ -7,7 +7,7 @@ defmodule ComnetWebsocketWeb.NotificationSocket do
   """
 
   use Phoenix.Socket
-  alias ComnetWebsocket.DeviceService
+  alias ComnetWebsocket.Services.DeviceService
   require Logger
 
   channel "notification", ComnetWebsocketWeb.NotificationChannel

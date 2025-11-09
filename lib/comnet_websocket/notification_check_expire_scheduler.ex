@@ -7,7 +7,8 @@ defmodule ComnetWebsocket.NotificationCheckExpireScheduler do
   """
 
   use GenServer
-  alias ComnetWebsocket.{NotificationService, Constants}
+  alias ComnetWebsocket.{Constants}
+  alias ComnetWebsocket.Services.NotificationService
 
   @type state :: keyword()
 
