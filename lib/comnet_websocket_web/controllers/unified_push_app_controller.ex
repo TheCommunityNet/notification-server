@@ -13,11 +13,11 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
            connector_token: connector_token,
            device_id: device_id
          }) do
-      {:ok, _} ->
+      {:ok, unified_push_app} ->
         json(conn, %{
           success: true,
           message: "Unified push app created successfully",
-          url: "#{conn.request_path}/#{app_id}/#{connector_token}/send"
+          url: "https://#{conn.host}/api/v1/unified_push/#{unified_push_app.id}/send"
         })
 
       {:error, changeset} ->
