@@ -121,7 +121,9 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
       matrix: %{
         app_id: unified_push_app.app_id,
         connector_token: unified_push_app.connector_token,
-        payload: notification
+        payload: %{
+          notification: notification
+        }
       }
     }
   end
