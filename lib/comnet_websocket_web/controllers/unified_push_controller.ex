@@ -47,7 +47,7 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
         {:ok, id} ->
           case UnifiedPushAppService.find_unified_push_app_by_id(id) do
             {:ok, unified_push_app} ->
-              send_matrix_notification_to_device(unified_push_app, notification, device)
+              send_matrix_notification_to_device(unified_push_app, notification)
               rejected
 
             {:error, :not_found} ->
@@ -78,7 +78,7 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
   defp extract_id_from_push_key(_), do: {:error, :invalid_push_key}
 
   # Send Matrix notification to device via WebSocket
-  defp send_matrix_notification_to_device(unified_push_app, notification, device) do
+  defp send_matrix_notification_to_device(unified_push_app, notification) do
     # Build notification message from Matrix format
     message = build_matrix_message(notification, unified_push_app)
 
@@ -95,14 +95,12 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
   # Build notification message from Matrix notification format
   defp build_matrix_message(notification, unified_push_app) do
     content = Map.get(notification, "content", %{})
-    event_id = Map.get(notification, "event_id")
     room_id = Map.get(notification, "room_id")
     sender = Map.get(notification, "sender")
 
     # Extract title and body from Matrix content
     # Matrix content format varies, but typically has "body" and sometimes "msgtype"
     body = Map.get(content, "body", "")
-    msgtype = Map.get(content, "msgtype", "m.text")
 
     # Build title from room_id or sender
     title =
