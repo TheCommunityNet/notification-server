@@ -51,36 +51,31 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
       diff_timestamp = now_timestamp - sent_at
       received_at = DateTime.from_unix!(received_at + diff_timestamp, :millisecond)
 
-      # Check if notification_id is actually a group_key
-      case NotificationService.get_notification_by_key(notification_id) do
-        nil ->
-          # notification_id might be a group_key, check for grouped notifications
-          case NotificationService.get_notification_by_group_key(notification_id) do
-            [] ->
-              :ok
+      if String.starts_with?(notification_id, "g-") do
+        case NotificationService.get_notification_by_group_key(notification_id) do
+          [] ->
+            :ok
 
-            group_notifications ->
-              # Found group notifications, update tracking for all of them
-              Enum.each(group_notifications, fn notification ->
-                NotificationService.save_notification_tracking(%{
-                  notification_key: notification.key,
-                  user_id: Map.get(payload, "user_id"),
-                  device_id: device_id,
-                  received_at: received_at,
-                  is_received: true
-                })
-              end)
-          end
-
-        _notification ->
-          # Found single notification, save tracking normally
-          NotificationService.save_notification_tracking(%{
-            notification_key: notification_id,
-            user_id: Map.get(payload, "user_id"),
-            device_id: device_id,
-            received_at: received_at,
-            is_received: true
-          })
+          group_notifications ->
+            # Found group notifications, update tracking for all of them
+            Enum.each(group_notifications, fn notification ->
+              NotificationService.save_notification_tracking(%{
+                notification_key: notification.key,
+                user_id: Map.get(payload, "user_id"),
+                device_id: device_id,
+                received_at: received_at,
+                is_received: true
+              })
+            end)
+        end
+      else
+        NotificationService.save_notification_tracking(%{
+          notification_key: notification_id,
+          user_id: Map.get(payload, "user_id"),
+          device_id: device_id,
+          received_at: received_at,
+          is_received: true
+        })
       end
 
       {:noreply, socket}
