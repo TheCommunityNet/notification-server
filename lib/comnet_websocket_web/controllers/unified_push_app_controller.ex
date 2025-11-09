@@ -17,7 +17,7 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
         json(conn, %{
           success: true,
           message: "Unified push app created successfully",
-          push_url: unified_push_app.id
+          url: "https://#{conn.host}/api/v1/unified_push/#{unified_push_app.id}/send"
         })
 
       {:error, changeset} ->
