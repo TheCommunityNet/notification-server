@@ -82,6 +82,7 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
   defp process_matrix_notification(notification, devices) do
     Enum.reduce(devices, [], fn device, rejected ->
       pushkey = Map.get(device, "pushkey")
+      IO.inspect(pushkey, label: "pushkey")
 
       case UnifiedPushAppService.find_unified_push_app_by_pushkey(pushkey) do
         {:ok, unified_push_app} ->
