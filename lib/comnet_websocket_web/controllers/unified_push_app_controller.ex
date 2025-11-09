@@ -46,4 +46,12 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
         })
     end
   end
+
+  def matrix_notify(conn, {}) do
+    json(conn, %{
+      unifiedpush: %{
+        gateway: "matrix"
+      }
+    })
+  end
 end
