@@ -113,20 +113,14 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
       end
 
     %{
-      id: event_id || Ecto.UUID.generate(),
+      id: Ecto.UUID.generate(),
       title: title,
       content: body,
       url: nil,
       category: "matrix",
       is_dialog: false,
       timestamp: DateTime.utc_now() |> DateTime.to_unix(:millisecond),
-      matrix: %{
-        event_id: event_id,
-        room_id: room_id,
-        sender: sender,
-        msgtype: msgtype,
-        data: Map.get(device, "data", %{})
-      }
+      matrix: notification
     }
   end
 
