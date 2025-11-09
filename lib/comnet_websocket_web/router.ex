@@ -12,6 +12,13 @@ defmodule ComnetWebsocketWeb.Router do
       post "/notification/send", NotificationController, :send_notification
       get "/connection/active", ConnectionController, :active_connections
       get "/connection/active/users", ConnectionController, :active_users
+
+      post "/unified_push/:id/send",
+           UnifiedPushController,
+           :send_notification
+
+      post "/unified_push_app", UnifiedPushAppController, :create
+      delete "/unified_push_app", UnifiedPushAppController, :delete
     end
   end
 
