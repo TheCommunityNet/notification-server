@@ -80,7 +80,7 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
   # Send Matrix notification to device via WebSocket
   defp send_matrix_notification_to_device(unified_push_app, notification, device) do
     # Build notification message from Matrix format
-    message = build_matrix_message(notification, device)
+    message = build_matrix_message(notification, unified_push_app)
 
     # Broadcast to device via PubSub
     if unified_push_app.device_id do
@@ -93,7 +93,7 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
   end
 
   # Build notification message from Matrix notification format
-  defp build_matrix_message(notification, device) do
+  defp build_matrix_message(notification, unified_push_app) do
     content = Map.get(notification, "content", %{})
     event_id = Map.get(notification, "event_id")
     room_id = Map.get(notification, "room_id")
@@ -120,7 +120,11 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
       category: "matrix",
       is_dialog: false,
       timestamp: DateTime.utc_now() |> DateTime.to_unix(:millisecond),
-      matrix: notification
+      matrix: %{
+        app_id: unified_push_app.app_id,
+        connector_token: unified_push_app.connector_token,
+        payload: notification
+      }
     }
   end
 
