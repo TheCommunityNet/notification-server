@@ -21,7 +21,7 @@ defmodule ComnetWebsocketWeb.Router do
            :send_notification
 
       post "/unified_push_app", UnifiedPushAppController, :create
-      delete "/unified_push_app", UnifiedPushAppController, :delete
+      delete "/unified_push_app/:device_id/:connector_token", UnifiedPushAppController, :delete
     end
   end
 
