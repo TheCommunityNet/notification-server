@@ -30,28 +30,37 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
     end
   end
 
-  def delete(conn, %{
-        "device_id" => device_id,
-        "connector_token" => connector_token
-      }) do
-    case UnifiedPushAppService.delete_unified_push_app(%{
-           device_id: device_id,
-           connector_token: connector_token
-         }) do
-      {:ok, unified_push_app} ->
-        json(conn, %{
-          success: true,
-          app_id: unified_push_app.app_id,
-          message: "Unified push app deleted successfully"
-        })
+  def delete(conn, params) do
+    device_id = params["device_id"] || Map.get(conn.path_params, "device_id")
+    connector_token = params["connector_token"] || Map.get(conn.path_params, "connector_token")
 
-      {:error, :not_found} ->
-        conn
-        |> put_status(:not_found)
-        |> json(%{
-          success: false,
-          error: "Unified push app not found"
-        })
+    if !device_id || !connector_token do
+      conn
+      |> put_status(:bad_request)
+      |> json(%{
+        success: false,
+        error: "Missing device_id or connector_token"
+      })
+    else
+      case UnifiedPushAppService.delete_unified_push_app(%{
+             device_id: device_id,
+             connector_token: connector_token
+           }) do
+        {:ok, unified_push_app} ->
+          json(conn, %{
+            success: true,
+            app_id: unified_push_app.app_id,
+            message: "Unified push app deleted successfully"
+          })
+
+        {:error, :not_found} ->
+          conn
+          |> put_status(:not_found)
+          |> json(%{
+            success: false,
+            error: "Unified push app not found"
+          })
+      end
     end
   end
 
