@@ -31,17 +31,17 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
   end
 
   def delete(conn, %{
-        "app_id" => app_id,
         "connector_token" => connector_token,
         "device_id" => device_id
       }) do
     case UnifiedPushAppService.delete_unified_push_app(%{
-           app_id: app_id,
            connector_token: connector_token,
            device_id: device_id
          }) do
-      {:ok, _} ->
+      {:ok, unified_push_app} ->
         json(conn, %{
+          success: true,
+          app_id: unified_push_app.app_id,
           message: "Unified push app deleted successfully"
         })
     end

@@ -52,7 +52,6 @@ defmodule ComnetWebsocket.Services.UnifiedPushAppService do
   @spec delete_unified_push_app(unified_push_app_attrs()) :: unified_push_app_result()
   def delete_unified_push_app(attrs) do
     case Repo.get_by(UnifiedPushApp,
-           app_id: attrs.app_id,
            connector_token: attrs.connector_token,
            device_id: attrs.device_id
          ) do
