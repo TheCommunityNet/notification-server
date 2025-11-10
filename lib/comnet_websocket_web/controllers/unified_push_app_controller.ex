@@ -44,6 +44,14 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
           app_id: unified_push_app.app_id,
           message: "Unified push app deleted successfully"
         })
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{
+          success: false,
+          error: "Unified push app not found"
+        })
     end
   end
 
