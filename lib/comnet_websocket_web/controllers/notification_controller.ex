@@ -36,10 +36,9 @@ defmodule ComnetWebsocketWeb.NotificationController do
   """
   @spec get_notifications_by_device_id(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def get_notifications_by_device_id(conn, %{"device_id" => device_id}) do
-    notifications =
+    messages =
       NotificationService.get_and_mark_notifications_as_read_for_device(device_id)
-
-    messages = Enum.map(notifications, &NotificationService.build_websocket_message/1)
+      |> Enum.map(&NotificationService.build_websocket_message/1)
 
     json(conn, %{messages: messages})
   end
