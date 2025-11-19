@@ -1,7 +1,8 @@
 defmodule ComnetWebsocketWeb.UnifiedPushController do
   use ComnetWebsocketWeb, :controller
 
-  alias ComnetWebsocket.Services.UnifiedPushAppService
+  alias ComnetWebsocket.{Constants, Services.UnifiedPushAppService, Services.NotificationService}
+  alias ComnetWebsocket.Models.{Notification, UnifiedPushApp}
 
   def send_notification(conn, params) do
     # Matrix Push Gateway notification format:
@@ -79,53 +80,47 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
 
   # Send Matrix notification to device via WebSocket
   defp send_matrix_notification_to_device(unified_push_app, notification) do
-    # Build notification message from Matrix format
-    message = build_matrix_message(notification, unified_push_app)
-
     # Broadcast to device via PubSub
     if unified_push_app.device_id do
-      Phoenix.PubSub.broadcast(
-        ComnetWebsocket.PubSub,
-        "device:#{unified_push_app.device_id}",
-        {:broadcast, message}
-      )
+      # Save notification to database before sending
+      case save_notification_to_database(notification, unified_push_app) do
+        {:ok, notification} ->
+          IO.inspect(notification, label: "notification")
+
+        # TODO: send notification to device via WebSocket
+        # Phoenix.PubSub.broadcast(
+        #   ComnetWebsocket.PubSub,
+        #   "device:#{unified_push_app.device_id}",
+        #   {:broadcast, message}
+        # )
+
+        {:error, _changeset} ->
+          :error
+      end
     end
   end
 
-  # Build notification message from Matrix notification format
-  defp build_matrix_message(notification, unified_push_app) do
-    content = Map.get(notification, "content", %{})
-    room_id = Map.get(notification, "room_id")
-    sender = Map.get(notification, "sender")
-
-    # Extract title and body from Matrix content
-    # Matrix content format varies, but typically has "body" and sometimes "msgtype"
-    body = Map.get(content, "body", "")
-
-    # Build title from room_id or sender
-    title =
-      cond do
-        room_id -> "Matrix: #{room_id}"
-        sender -> "Matrix: #{sender}"
-        true -> "Matrix Notification"
-      end
+  # Save notification to database
+  @spec save_notification_to_database(map(), UnifiedPushApp.t()) ::
+          {:ok, Notification.t()} | {:error, Ecto.Changeset.t()}
+  defp save_notification_to_database(notification, unified_push_app) do
+    expired_at = DateTime.utc_now() |> DateTime.add(24 * 60 * 60, :second)
 
     %{
-      id: Ecto.UUID.generate(),
-      title: title,
-      content: body,
-      url: nil,
+      type: Constants.notification_type_device(),
       category: "matrix",
-      is_dialog: false,
-      timestamp: DateTime.utc_now() |> DateTime.to_unix(:millisecond),
-      matrix: %{
+      payload: %{
         app_id: unified_push_app.app_id,
         connector_token: unified_push_app.connector_token,
         payload: %{
           notification: notification
         }
-      }
+      },
+      expired_at: expired_at,
+      is_expired: false,
+      device_id: unified_push_app.device_id
     }
+    |> NotificationService.save_notification()
   end
 
   def check(conn, _params) do

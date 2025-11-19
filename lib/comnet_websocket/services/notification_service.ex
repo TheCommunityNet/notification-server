@@ -20,7 +20,8 @@ defmodule ComnetWebsocket.Services.NotificationService do
           optional(:expired_at) => DateTime.t(),
           optional(:is_expired) => boolean(),
           optional(:user_id) => String.t(),
-          optional(:user_ids) => [String.t()]
+          optional(:user_ids) => [String.t()],
+          optional(:device_id) => String.t()
         }
 
   @type notification_result :: {:ok, Notification.t()} | {:error, Ecto.Changeset.t()}
@@ -202,6 +203,11 @@ defmodule ComnetWebsocket.Services.NotificationService do
 
   defp create_tracking_records(notification_key, %{user_id: user_id}) do
     save_notification_tracking(%{notification_key: notification_key, user_id: user_id})
+    :ok
+  end
+
+  defp create_tracking_records(notification_key, %{device_id: device_id}) do
+    save_notification_tracking(%{notification_key: notification_key, device_id: device_id})
     :ok
   end
 
