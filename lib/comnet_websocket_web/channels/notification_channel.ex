@@ -139,7 +139,7 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
     case NotificationService.get_notifications_for_device(socket.assigns.device_id) do
       notifications when is_list(notifications) ->
         Enum.each(notifications, fn notification ->
-          push(socket, "message", build_notification_message(notification))
+          push(socket, "message", NotificationService.build_websocket_message(notification))
         end)
     end
 
@@ -165,13 +165,13 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
         # Send emergency notifications immediately, one by one
         Enum.each(emergency_notifications, fn notification ->
-          push(socket, "message", build_notification_message(notification))
+          push(socket, "message", NotificationService.build_websocket_message(notification))
         end)
 
         # Group other notifications by category and send as groups
         other_notifications
         |> Enum.group_by(fn notification -> notification.category end)
-        |> Enum.each(fn {category, category_notifications} ->
+        |> Enum.each(fn {_category, category_notifications} ->
           # Generate a UUID for this group
           group_key = "g-" <> Ecto.UUID.generate()
 
@@ -180,17 +180,12 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
           NotificationService.update_notifications_group_key(notification_keys, group_key)
 
-          [first_notification | _] = category_notifications
           # Send all notifications of the same category as a group
-          push(socket, "message", %{
-            id: group_key,
-            category: category,
-            is_dialog: false,
-            title: Map.get(first_notification.payload, "title"),
-            content: Map.get(first_notification.payload, "content"),
-            url: Map.get(first_notification.payload, "url"),
-            timestamp: first_notification.inserted_at |> DateTime.to_unix(:millisecond)
-          })
+          push(
+            socket,
+            "message",
+            NotificationService.build_group_websocket_message(group_key, category_notifications)
+          )
         end)
     end
 
@@ -199,35 +194,33 @@ defmodule ComnetWebsocketWeb.NotificationChannel do
 
   def leave(device_id, connection_id) do
     if connection_id do
-      case DeviceService.update_device_activity(%{
-             device_id: device_id,
-             connection_id: connection_id,
-             ended_at: DateTime.utc_now()
-           }) do
-        {:ok, _} ->
-          :ok
+      try do
+        case DeviceService.update_device_activity(%{
+               device_id: device_id,
+               connection_id: connection_id,
+               ended_at: DateTime.utc_now()
+             }) do
+          {:ok, _} ->
+            :ok
 
-        {:error, _} ->
+          {:error, _} ->
+            :ok
+        end
+      rescue
+        e ->
+          # Handle database connection errors gracefully, especially in test mode
+          # when tasks don't have access to the sandbox connection
+          Logger.debug("Failed to update device activity on leave: #{inspect(e)}")
+          :ok
+      catch
+        :exit, reason ->
+          # Handle process exit errors gracefully
+          Logger.debug("Process exited while updating device activity: #{inspect(reason)}")
           :ok
       end
     else
       :ok
     end
-  end
-
-  # Private helper functions
-
-  @spec build_notification_message(ComnetWebsocket.Models.Notification.t()) :: map()
-  defp build_notification_message(notification) do
-    %{
-      id: notification.key,
-      category: notification.category,
-      title: Map.get(notification.payload, "title"),
-      content: Map.get(notification.payload, "content"),
-      url: Map.get(notification.payload, "url", nil),
-      is_dialog: notification.category == Constants.notification_category_emergency(),
-      timestamp: notification.inserted_at |> DateTime.to_unix(:millisecond)
-    }
   end
 
   defp parse_timestamp(timestamp) when is_integer(timestamp), do: {:ok, timestamp}

@@ -87,12 +87,11 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
         {:ok, notification} ->
           IO.inspect(notification, label: "notification")
 
-        # TODO: send notification to device via WebSocket
-        # Phoenix.PubSub.broadcast(
-        #   ComnetWebsocket.PubSub,
-        #   "device:#{unified_push_app.device_id}",
-        #   {:broadcast, message}
-        # )
+          Phoenix.PubSub.broadcast(
+            ComnetWebsocket.PubSub,
+            "device:#{unified_push_app.device_id}",
+            {:broadcast, NotificationService.build_websocket_message(notification)}
+          )
 
         {:error, _changeset} ->
           :error

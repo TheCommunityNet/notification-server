@@ -26,7 +26,7 @@ defmodule ComnetWebsocketWeb.NotificationController do
   def send_notification(conn, params) do
     with {:ok, notification_params} <- build_notification_params(params),
          {:ok, notification} <- NotificationService.save_notification(notification_params) do
-      message = build_message(notification, params["payload"])
+      message = NotificationService.build_websocket_message(notification)
       broadcast_notification(params, message)
       json(conn, %{message: message})
     else
@@ -113,19 +113,6 @@ defmodule ComnetWebsocketWeb.NotificationController do
        do: true
 
   defp valid_payload?(_), do: false
-
-  # Build the message map from notification and payload
-  @spec build_message(ComnetWebsocket.Models.Notification.t(), map()) :: map()
-  defp build_message(notification, payload) do
-    %{
-      id: notification.key,
-      title: payload["title"],
-      content: payload["content"],
-      url: payload["url"],
-      category: notification.category,
-      is_dialog: notification.category == Constants.notification_category_emergency()
-    }
-  end
 
   # Handle broadcasting based on notification type
   defp broadcast_notification(%{"user_ids" => user_ids}, message) when is_list(user_ids) do

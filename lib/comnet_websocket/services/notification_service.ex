@@ -26,6 +26,13 @@ defmodule ComnetWebsocket.Services.NotificationService do
 
   @type notification_result :: {:ok, Notification.t()} | {:error, Ecto.Changeset.t()}
 
+  @type websocket_message :: %{
+          id: String.t(),
+          category: String.t(),
+          data: map(),
+          is_dialog: boolean()
+        }
+
   @doc """
   Retrieves notifications for a specific device.
 
@@ -244,5 +251,27 @@ defmodule ComnetWebsocket.Services.NotificationService do
     existing_tracking
     |> NotificationTracking.changeset(attrs)
     |> Repo.update()
+  end
+
+  @spec build_websocket_message(Notification.t()) :: websocket_message()
+  def build_websocket_message(notification) do
+    %{
+      id: notification.key,
+      category: notification.category,
+      data: notification.payload,
+      is_dialog: notification.category == Constants.notification_category_emergency()
+    }
+  end
+
+  @spec build_group_websocket_message(String.t(), [Notification.t()]) :: websocket_message()
+  def build_group_websocket_message(group_key, notifications) do
+    [first_notification | _] = notifications
+
+    %{
+      id: group_key,
+      category: first_notification.category,
+      data: first_notification.payload,
+      is_dialog: false
+    }
   end
 end
