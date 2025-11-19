@@ -13,6 +13,11 @@ defmodule ComnetWebsocketWeb.Router do
 
     scope "/v1" do
       post "/notification/send", NotificationController, :send_notification
+
+      get "/notification/device/:device_id",
+          NotificationController,
+          :get_notifications_by_device_id
+
       get "/connection/active", ConnectionController, :active_connections
       get "/connection/active/users", ConnectionController, :active_users
 

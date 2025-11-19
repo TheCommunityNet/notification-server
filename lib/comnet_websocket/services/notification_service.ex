@@ -47,14 +47,54 @@ defmodule ComnetWebsocket.Services.NotificationService do
   """
   @spec get_notifications_for_device(String.t()) :: [Notification.t()]
   def get_notifications_for_device(device_id) do
+    now = DateTime.utc_now()
+
+    # Get notifications that either:
+    # 1. Have no tracking record for this device (broadcast to all devices)
+    # 2. Have a tracking record for this device that is unread
     query =
       from n in Notification,
         left_join: nt in NotificationTracking,
         on: nt.notification_key == n.key and nt.device_id == ^device_id,
         where: n.type == ^Constants.notification_type_device(),
-        where: is_nil(nt.is_received) and not n.is_expired and n.expired_at > ^DateTime.utc_now()
+        where: is_nil(nt.id) or is_nil(nt.is_received) or not nt.is_received,
+        where: not n.is_expired,
+        where: n.expired_at > ^now,
+        distinct: true
 
     Repo.all(query)
+  end
+
+  @doc """
+  Retrieves unread notifications for a device and marks them as read.
+
+  Returns all non-expired device notifications that haven't been received
+  by the specified device, then marks them as read.
+
+  ## Parameters
+  - `device_id` - The device identifier
+
+  ## Returns
+  - List of notifications that were marked as read
+  """
+  @spec get_and_mark_notifications_as_read_for_device(String.t()) :: [Notification.t()]
+  def get_and_mark_notifications_as_read_for_device(device_id) do
+    # Get unread notifications for the device
+    notifications = get_notifications_for_device(device_id)
+
+    # Mark them as read
+    received_at = DateTime.utc_now()
+
+    Enum.each(notifications, fn notification ->
+      save_notification_tracking(%{
+        notification_key: notification.key,
+        device_id: device_id,
+        received_at: received_at,
+        is_received: true
+      })
+    end)
+
+    notifications
   end
 
   @doc """

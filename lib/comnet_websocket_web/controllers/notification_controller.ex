@@ -11,6 +11,44 @@ defmodule ComnetWebsocketWeb.NotificationController do
   alias ComnetWebsocket.Services.NotificationService
 
   plug ComnetWebsocketWeb.Plugs.ApiKeyAuth when action in [:send_notification]
+  plug :check_rate_limit when action in [:get_notifications_by_device_id]
+
+  # Rate limit check for get_notifications_by_device_id
+  defp check_rate_limit(conn, _opts) do
+    opts = [
+      max_requests: 10,
+      window_seconds: 60,
+      key_func: fn conn -> Map.get(conn.path_params, "device_id") end
+    ]
+
+    ComnetWebsocketWeb.Plugs.RateLimit.call(conn, opts)
+  end
+
+  @doc """
+  Gets unread notifications for a device, marks them as read, and returns them as websocket messages.
+
+  ## Parameters
+  - `conn` - The connection
+  - `params` - Request parameters containing device_id
+
+  ## Returns
+  - JSON response with list of websocket messages
+  """
+  @spec get_notifications_by_device_id(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def get_notifications_by_device_id(conn, %{"device_id" => device_id}) do
+    notifications =
+      NotificationService.get_and_mark_notifications_as_read_for_device(device_id)
+
+    messages = Enum.map(notifications, &NotificationService.build_websocket_message/1)
+
+    json(conn, %{messages: messages})
+  end
+
+  def get_notifications_by_device_id(conn, _params) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: Constants.error_invalid_params()})
+  end
 
   @doc """
   Sends a notification to users or devices.
