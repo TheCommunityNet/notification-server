@@ -22,7 +22,6 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
     #     ]
     #   }
     # }
-    IO.inspect(params, label: "params")
     notification = params["notification"]
 
     if notification && is_map(notification) do
@@ -40,7 +39,6 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
   defp process_matrix_notification(notification, devices) do
     Enum.reduce(devices, [], fn device, rejected ->
       push_key = Map.get(device, "pushkey")
-      IO.inspect(push_key, label: "push_key")
 
       # Extract ID from push_key URL path
       # Pushkey format: "api/v1/unified_push/{id}/send" or "https://domain.com/api/v1/unified_push/{id}/send"
@@ -85,8 +83,6 @@ defmodule ComnetWebsocketWeb.UnifiedPushController do
       # Save notification to database before sending
       case save_notification_to_database(notification, unified_push_app) do
         {:ok, notification} ->
-          IO.inspect(notification, label: "notification")
-
           Phoenix.PubSub.broadcast(
             ComnetWebsocket.PubSub,
             "device:#{unified_push_app.device_id}",
