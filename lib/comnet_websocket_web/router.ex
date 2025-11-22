@@ -48,7 +48,7 @@ defmodule ComnetWebsocketWeb.Router do
 
   if Mix.env() == :prod do
     import Phoenix.LiveDashboard.Router
-    import Plug.BasicAuth
+    # import Plug.BasicAuth
 
     defp dashboard_auth_plug(conn, _opts) do
       dashboard_auth = Application.get_env(:comnet_websocket, :dashboard_auth, [])
