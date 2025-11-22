@@ -11,7 +11,7 @@ defmodule ComnetWebsocketWeb.NotificationController do
   alias ComnetWebsocket.Services.NotificationService
 
   plug ComnetWebsocketWeb.Plugs.ApiKeyAuth when action in [:send_notification]
-  plug :check_rate_limit when action in [:get_notifications_by_device_id]
+  # plug :check_rate_limit when action in [:get_notifications_by_device_id]
 
   # Rate limit check for get_notifications_by_device_id
   defp check_rate_limit(conn, _opts) do
