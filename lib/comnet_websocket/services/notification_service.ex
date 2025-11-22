@@ -266,16 +266,16 @@ defmodule ComnetWebsocket.Services.NotificationService do
     device_id = Map.get(attrs, :device_id) || Map.get(attrs, "device_id")
     user_id = Map.get(attrs, :user_id) || Map.get(attrs, "user_id")
 
-    device_id_filter =
+    user_id_filter =
       if not is_nil(user_id) do
-        dynamic([nt], nt.user_id == ^user_id)
+        dynamic([nt], nt.user_id == ^user_id or is_nil(nt.user_id))
       else
         true
       end
 
-    user_id_filter =
+    device_id_filter =
       if not is_nil(device_id) do
-        dynamic([nt], nt.device_id == ^device_id)
+        dynamic([nt], nt.device_id == ^device_id or is_nil(nt.device_id))
       else
         true
       end
