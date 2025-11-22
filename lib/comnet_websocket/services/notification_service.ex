@@ -261,19 +261,20 @@ defmodule ComnetWebsocket.Services.NotificationService do
   defp create_tracking_records(_notification_key, _attrs), do: :ok
 
   @spec find_existing_tracking(map()) :: NotificationTracking.t() | nil
-  defp find_existing_tracking(%{user_id: user_id, notification_key: notification_key})
-       when not is_nil(user_id) do
-    Repo.get_by(NotificationTracking,
-      notification_key: notification_key,
-      user_id: user_id
-    )
-  end
-
+  # Prefer device tracking when both device_id and user_id are present
   defp find_existing_tracking(%{device_id: device_id, notification_key: notification_key})
        when not is_nil(device_id) do
     Repo.get_by(NotificationTracking,
       notification_key: notification_key,
       device_id: device_id
+    )
+  end
+
+  defp find_existing_tracking(%{user_id: user_id, notification_key: notification_key})
+       when not is_nil(user_id) do
+    Repo.get_by(NotificationTracking,
+      notification_key: notification_key,
+      user_id: user_id
     )
   end
 
