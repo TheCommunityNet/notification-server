@@ -21,11 +21,12 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
         })
 
       {:error, changeset} ->
+        IO.inspect(changeset, label: "UnifiedPushApp creation error")
+
         conn
         |> put_status(:unprocessable_entity)
         |> json(%{
-          success: false,
-          error: changeset
+          success: false
         })
     end
   end
