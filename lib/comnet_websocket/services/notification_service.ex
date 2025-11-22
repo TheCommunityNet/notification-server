@@ -6,7 +6,7 @@ defmodule ComnetWebsocket.Services.NotificationService do
   creation, retrieval, and tracking of notifications.
   """
 
-  import Ecto.Query, only: [from: 2]
+  import Ecto.Query
   alias ComnetWebsocket.{Repo, Constants}
   alias ComnetWebsocket.Models.{Notification, NotificationTracking}
 
@@ -262,20 +262,32 @@ defmodule ComnetWebsocket.Services.NotificationService do
 
   @spec find_existing_tracking(map()) :: NotificationTracking.t() | nil
   # Prefer device tracking when both device_id and user_id are present
-  defp find_existing_tracking(%{device_id: device_id, notification_key: notification_key})
-       when not is_nil(device_id) do
-    Repo.get_by(NotificationTracking,
-      notification_key: notification_key,
-      device_id: device_id
-    )
-  end
+  defp find_existing_tracking(%{notification_key: notification_key} = attrs) do
+    device_id = Map.get(attrs, :device_id) || Map.get(attrs, "device_id")
+    user_id = Map.get(attrs, :user_id) || Map.get(attrs, "user_id")
 
-  defp find_existing_tracking(%{user_id: user_id, notification_key: notification_key})
-       when not is_nil(user_id) do
-    Repo.get_by(NotificationTracking,
-      notification_key: notification_key,
-      user_id: user_id
-    )
+    device_id_filter =
+      if not is_nil(user_id) do
+        dynamic([nt], nt.user_id == ^user_id)
+      else
+        true
+      end
+
+    user_id_filter =
+      if not is_nil(device_id) do
+        dynamic([nt], nt.device_id == ^device_id)
+      else
+        true
+      end
+
+    query =
+      NotificationTracking
+      |> where([nt], nt.notification_key == ^notification_key)
+      |> where(^device_id_filter)
+      |> where(^user_id_filter)
+      |> limit(1)
+
+    Repo.one(query)
   end
 
   defp find_existing_tracking(_attrs), do: nil
