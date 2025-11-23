@@ -79,6 +79,29 @@ defmodule ComnetWebsocketWeb.NotificationController do
     end
   end
 
+  @spec send_notification(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def send_old_notification(conn, params) do
+    with {:ok, notification_params} <- build_notification_params(params) do
+      message = %{
+        id: Ecto.UUID.generate(),
+        category: notification_params.category,
+        title: notification_params.payload["title"],
+        content: notification_params.payload["content"],
+        is_dialog: false,
+        expired_at: notification_params.expired_at,
+        user_ids: Map.get(notification_params, :user_ids)
+      }
+
+      broadcast_notification(params, message)
+      json(conn, %{message: message})
+    else
+      {:error, :invalid_params} ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: Constants.error_invalid_params()})
+    end
+  end
+
   # Build notification parameters based on input type
   @spec build_notification_params(map()) :: {:ok, map()} | {:error, :invalid_params}
   defp build_notification_params(%{
