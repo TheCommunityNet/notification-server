@@ -80,7 +80,7 @@ defmodule ComnetWebsocketWeb.NotificationController do
   end
 
   @spec send_notification(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def send_old_notification(conn, params) do
+  def send_old_notification(conn, %{"device_ids" => device_ids} = params) do
     with {:ok, notification_params} <- build_notification_params(params) do
       message = %{
         id: Ecto.UUID.generate(),
@@ -88,11 +88,17 @@ defmodule ComnetWebsocketWeb.NotificationController do
         title: notification_params.payload["title"],
         content: notification_params.payload["content"],
         is_dialog: false,
-        expired_at: notification_params.expired_at,
-        user_ids: Map.get(notification_params, :user_ids)
+        expired_at: notification_params.expired_at
       }
 
-      broadcast_notification(params, message)
+      Enum.each(device_ids, fn device_id ->
+        Phoenix.PubSub.broadcast(
+          ComnetWebsocket.PubSub,
+          "device:#{device_id}",
+          {:broadcast, message}
+        )
+      end)
+
       json(conn, %{message: message})
     else
       {:error, :invalid_params} ->
