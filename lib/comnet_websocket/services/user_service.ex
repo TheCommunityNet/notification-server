@@ -1,0 +1,88 @@
+defmodule ComnetWebsocket.Services.UserService do
+  import Ecto.Query
+
+  alias ComnetWebsocket.Repo
+  alias ComnetWebsocket.Models.{User, Shelly}
+
+  @spec list_users() :: [User.t()]
+  def list_users do
+    Repo.all(from u in User, order_by: [desc: u.inserted_at])
+  end
+
+  @spec list_users_with_shellies() :: [User.t()]
+  def list_users_with_shellies do
+    User
+    |> order_by([u], desc: u.inserted_at)
+    |> Repo.all()
+    |> Repo.preload(:shellies)
+  end
+
+  @spec get_user(String.t()) :: User.t() | nil
+  def get_user(id) do
+    Repo.get(User, id)
+  end
+
+  @spec assign_shelly(User.t(), String.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def assign_shelly(user, shelly_id) do
+    user = Repo.preload(user, :shellies)
+    shelly = Repo.get(Shelly, shelly_id)
+
+    if shelly do
+      user
+      |> Ecto.Changeset.change()
+      |> Ecto.Changeset.put_assoc(:shellies, [shelly | user.shellies])
+      |> Repo.update()
+    else
+      {:error, :not_found}
+    end
+  end
+
+  @spec remove_shelly(User.t(), String.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def remove_shelly(user, shelly_id) do
+    user = Repo.preload(user, :shellies)
+    updated = Enum.reject(user.shellies, &(to_string(&1.id) == to_string(shelly_id)))
+
+    user
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:shellies, updated)
+    |> Repo.update()
+  end
+
+  @spec update_user(User.t(), map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def update_user(user, attrs) do
+    user
+    |> User.update_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @spec create_user(map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def create_user(attrs) do
+    %User{}
+    |> User.admin_create_changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @spec generate_otp_token(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def generate_otp_token(user) do
+    user
+    |> User.generate_otp_changeset()
+    |> Repo.update()
+  end
+
+  @spec regenerate_access_token(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def regenerate_access_token(user) do
+    user
+    |> User.regenerate_access_token_changeset()
+    |> Repo.update()
+  end
+
+  @spec delete_user(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def delete_user(user) do
+    Repo.delete(user)
+  end
+
+  @spec count_users() :: integer()
+  def count_users do
+    Repo.aggregate(User, :count)
+  end
+end

@@ -5,6 +5,53 @@ defmodule ComnetWebsocketWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, html: {ComnetWebsocketWeb.Layouts, :root}
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+  end
+
+  pipeline :admin_auth do
+    plug :admin_basic_auth
+  end
+
+  defp admin_basic_auth(conn, _opts) do
+    creds = Application.get_env(:comnet_websocket, :admin_auth, [])
+
+    Plug.BasicAuth.basic_auth(conn,
+      username: creds[:username] || "admin",
+      password: creds[:password] || "admin"
+    )
+  end
+
+  scope "/admin", ComnetWebsocketWeb.Admin do
+    pipe_through [:browser, :admin_auth]
+
+    get "/", DashboardController, :index
+
+    get "/users", UserController, :index
+    post "/users", UserController, :create
+    get "/users/:id/edit", UserController, :edit
+    patch "/users/:id", UserController, :update
+    delete "/users/:id", UserController, :delete
+    post "/users/:id/generate_otp", UserController, :generate_otp
+    post "/users/:id/regenerate_token", UserController, :regenerate_token
+    post "/users/:id/shellies", UserController, :assign_shelly
+    delete "/users/:id/shellies/:shelly_id", UserController, :remove_shelly
+
+    get "/shellies", ShellyController, :index
+    post "/shellies", ShellyController, :create
+    get "/shellies/:id/edit", ShellyController, :edit
+    patch "/shellies/:id", ShellyController, :update
+    delete "/shellies/:id", ShellyController, :delete
+
+    get "/notifications", NotificationController, :index
+    post "/notifications", NotificationController, :send_notification
+  end
+
   get "/_matrix/push/v1/notify", ComnetWebsocketWeb.UnifiedPushController, :check
   post "/_matrix/push/v1/notify", ComnetWebsocketWeb.UnifiedPushController, :send_notification
 

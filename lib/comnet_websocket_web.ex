@@ -19,6 +19,22 @@ defmodule ComnetWebsocketWeb do
 
   def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
 
+  def html do
+    quote do
+      use Phoenix.Component
+
+      import Phoenix.Controller,
+        only: [get_csrf_token: 0, view_module: 1, view_template: 1]
+
+      import Phoenix.HTML
+      import ComnetWebsocketWeb.AdminComponents
+
+      alias ComnetWebsocketWeb.Layouts
+
+      unquote(verified_routes())
+    end
+  end
+
   def router do
     quote do
       use Phoenix.Router, helpers: false
@@ -26,6 +42,7 @@ defmodule ComnetWebsocketWeb do
       # Import common connection and controller functions to use in pipelines
       import Plug.Conn
       import Phoenix.Controller
+      import Phoenix.LiveView.Router
     end
   end
 
