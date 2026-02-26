@@ -3,8 +3,8 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateUserShellies do
 
   def change do
     create table(:user_shellies, primary_key: false) do
-      add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
-      add :shelly_id, references(:shellies, type: :binary_id, on_delete: :delete_all), null: false
+      add :user_id, references(:users, type: :uuid, on_delete: :delete_all), null: false
+      add :shelly_id, references(:shellies, type: :uuid, on_delete: :delete_all), null: false
     end
 
     create unique_index(:user_shellies, [:user_id, :shelly_id])

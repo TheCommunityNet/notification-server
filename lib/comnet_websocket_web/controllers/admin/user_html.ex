@@ -47,7 +47,7 @@ defmodule ComnetWebsocketWeb.Admin.UserHTML do
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h3 class="text-base font-semibold text-gray-900">All Users</h3>
-          <span class="text-xs text-gray-400"><%= length(@users) %> total</span>
+          <span class="text-xs text-gray-400"><%= @total_count %> total</span>
         </div>
 
         <%= if @users == [] do %>
@@ -139,6 +139,9 @@ defmodule ComnetWebsocketWeb.Admin.UserHTML do
                     <td class="px-6 py-4 text-right">
                       <.dropdown id={"user-actions-#{user.id}"}>
                         <.dropdown_item href={"/admin/users/#{user.id}/edit"}>Edit</.dropdown_item>
+                        <.dropdown_item href={"/admin/alerts?user_id=#{user.id}"}>
+                          View Alert History
+                        </.dropdown_item>
                         <.dropdown_divider />
                         <form action={"/admin/users/#{user.id}/generate_otp"} method="post">
                           <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
@@ -163,6 +166,8 @@ defmodule ComnetWebsocketWeb.Admin.UserHTML do
               </tbody>
             </table>
           </div>
+          <.pagination page={@page} total_pages={@total_pages} base_path={@base_path}
+                       total_count={@total_count} per_page={@per_page} />
         <% end %>
       </div>
     </div>

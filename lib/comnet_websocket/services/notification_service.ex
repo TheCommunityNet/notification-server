@@ -34,6 +34,27 @@ defmodule ComnetWebsocket.Services.NotificationService do
         }
 
   @doc """
+  Lists all notifications with pagination, ordered newest first.
+
+  Options:
+    - `:page`     – 1-based page number (default 1)
+    - `:per_page` – records per page (default 25)
+  """
+  @spec list_notifications(keyword()) :: [Notification.t()]
+  def list_notifications(opts \\ []) do
+    page = max(1, Keyword.get(opts, :page, 1))
+    per_page = Keyword.get(opts, :per_page, 25)
+    offset = (page - 1) * per_page
+
+    Repo.all(
+      from n in Notification,
+        order_by: [desc: n.inserted_at],
+        limit: ^per_page,
+        offset: ^offset
+    )
+  end
+
+  @doc """
   Retrieves notifications for a specific device.
 
   Returns all non-expired device notifications that haven't been received

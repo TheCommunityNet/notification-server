@@ -3,11 +3,28 @@ defmodule ComnetWebsocketWeb.Admin.ShellyController do
 
   plug :put_layout, html: {ComnetWebsocketWeb.Layouts, :app}
 
+  import ComnetWebsocketWeb.AdminPagination
+
   alias ComnetWebsocket.Services.ShellyService
 
-  def index(conn, _params) do
-    shellies = ShellyService.list_shellies()
-    render(conn, :index, page_title: "Shellies", shellies: shellies)
+  @per_page 25
+
+  def index(conn, params) do
+    page = parse_page(params)
+    shellies = ShellyService.list_shellies(page: page, per_page: @per_page)
+    total_count = ShellyService.count_shellies()
+    total_pages = total_pages(total_count, @per_page)
+    base_path = pagination_base_path("/admin/shellies", params)
+
+    render(conn, :index,
+      page_title: "Shellies",
+      shellies: shellies,
+      total_count: total_count,
+      page: page,
+      total_pages: total_pages,
+      per_page: @per_page,
+      base_path: base_path
+    )
   end
 
   def create(conn, %{"shelly" => shelly_params}) do

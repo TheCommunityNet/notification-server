@@ -305,8 +305,8 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   """
   attr :label, :string, required: true
   attr :value, :integer, required: true
-  attr :href, :string, required: true
-  attr :link_label, :string, required: true
+  attr :href, :string, default: nil
+  attr :link_label, :string, default: nil
   attr :color, :string, default: "indigo"
   slot :icon, required: true
 
@@ -322,9 +322,12 @@ defmodule ComnetWebsocketWeb.AdminComponents do
         </div>
       </div>
       <p class="text-3xl font-bold text-gray-900"><%= @value %></p>
-      <a href={@href} class={["text-xs hover:underline mt-1 inline-block", stat_link_class(@color)]}>
+      <a :if={@href} href={@href} class={["text-xs hover:underline mt-1 inline-block", stat_link_class(@color)]}>
         <%= @link_label %> →
       </a>
+      <p :if={!@href && @link_label} class={["text-xs mt-1", stat_link_class(@color)]}>
+        <%= @link_label %>
+      </p>
     </div>
     """
   end
@@ -332,15 +335,130 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   defp stat_bg_class("indigo"), do: "bg-indigo-50"
   defp stat_bg_class("emerald"), do: "bg-emerald-50"
   defp stat_bg_class("amber"), do: "bg-amber-50"
+  defp stat_bg_class("red"), do: "bg-red-50"
+  defp stat_bg_class("teal"), do: "bg-teal-50"
   defp stat_bg_class(_), do: "bg-gray-50"
 
   defp stat_icon_class("indigo"), do: "text-indigo-600"
   defp stat_icon_class("emerald"), do: "text-emerald-600"
   defp stat_icon_class("amber"), do: "text-amber-600"
+  defp stat_icon_class("red"), do: "text-red-600"
+  defp stat_icon_class("teal"), do: "text-teal-600"
   defp stat_icon_class(_), do: "text-gray-600"
 
   defp stat_link_class("indigo"), do: "text-indigo-600"
   defp stat_link_class("emerald"), do: "text-emerald-600"
   defp stat_link_class("amber"), do: "text-amber-600"
+  defp stat_link_class("red"), do: "text-red-600"
+  defp stat_link_class("teal"), do: "text-teal-600"
   defp stat_link_class(_), do: "text-gray-600"
+
+  @doc """
+  Renders a pagination control for admin list pages.
+
+  ## Attributes
+
+    * `page`        – current page (1-based)
+    * `total_pages` – total number of pages
+    * `base_path`   – URL path (with existing query params, without `page=`)
+    * `total_count` – total record count, displayed as summary text
+    * `per_page`    – records per page, used to compute the shown range
+
+  ## Example
+
+      <.pagination page={@page} total_pages={@total_pages}
+                   base_path={@base_path} total_count={@total_count} per_page={25} />
+  """
+  attr :page, :integer, required: true
+  attr :total_pages, :integer, required: true
+  attr :base_path, :string, required: true
+  attr :total_count, :integer, required: true
+  attr :per_page, :integer, required: true
+
+  def pagination(assigns) do
+    assigns = assign(assigns, :page_numbers, page_range(assigns.page, assigns.total_pages))
+
+    ~H"""
+    <div class="px-6 py-3 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-xs text-gray-500 order-2 sm:order-1">
+        Showing
+        <span class="font-medium text-gray-700">
+          <%= min((@page - 1) * @per_page + 1, @total_count) %>–<%= min(@page * @per_page, @total_count) %>
+        </span>
+        of <span class="font-medium text-gray-700"><%= @total_count %></span>
+      </p>
+
+      <nav class="flex items-center gap-1 order-1 sm:order-2" aria-label="Pagination">
+        <%!-- Previous --%>
+        <%= if @page > 1 do %>
+          <a href={page_href(@base_path, @page - 1)}
+             class="px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200
+                    hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+            ← Prev
+          </a>
+        <% else %>
+          <span class="px-2.5 py-1.5 text-xs font-medium text-gray-300 bg-white border border-gray-100
+                       rounded-lg cursor-not-allowed select-none">
+            ← Prev
+          </span>
+        <% end %>
+
+        <%!-- Page numbers --%>
+        <%= for item <- @page_numbers do %>
+          <%= if item == nil do %>
+            <span class="px-2 py-1.5 text-xs text-gray-400 select-none">…</span>
+          <% else %>
+            <a href={page_href(@base_path, item)}
+               class={[
+                 "min-w-[2rem] px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors text-center",
+                 if(item == @page,
+                   do: "bg-indigo-600 text-white border border-indigo-600",
+                   else: "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900"
+                 )
+               ]}>
+              <%= item %>
+            </a>
+          <% end %>
+        <% end %>
+
+        <%!-- Next --%>
+        <%= if @page < @total_pages do %>
+          <a href={page_href(@base_path, @page + 1)}
+             class="px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200
+                    hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+            Next →
+          </a>
+        <% else %>
+          <span class="px-2.5 py-1.5 text-xs font-medium text-gray-300 bg-white border border-gray-100
+                       rounded-lg cursor-not-allowed select-none">
+            Next →
+          </span>
+        <% end %>
+      </nav>
+    </div>
+    """
+  end
+
+  defp page_href(base_path, page) do
+    sep = if String.contains?(base_path, "?"), do: "&", else: "?"
+    "#{base_path}#{sep}page=#{page}"
+  end
+
+  defp page_range(_current, total) when total <= 7 do
+    Enum.to_list(1..total)
+  end
+
+  defp page_range(current, total) do
+    # Always include first, last, current and its immediate neighbours
+    always = MapSet.new([1, total, current, max(1, current - 1), min(total, current + 1)])
+
+    sorted = always |> MapSet.to_list() |> Enum.sort()
+
+    # Insert nil (ellipsis) between non-consecutive page numbers
+    sorted
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.reduce([hd(sorted)], fn [a, b], acc ->
+      if b - a > 1, do: acc ++ [nil, b], else: acc ++ [b]
+    end)
+  end
 end

@@ -4,7 +4,7 @@ defmodule ComnetWebsocketWeb.Admin.DashboardHTML do
   def index(assigns) do
     ~H"""
     <div class="space-y-8">
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <.stat_card label="Total Users" value={@user_count} href="/admin/users"
                     link_label="Manage users" color="indigo">
           <:icon>
@@ -34,24 +34,26 @@ defmodule ComnetWebsocketWeb.Admin.DashboardHTML do
             </svg>
           </:icon>
         </.stat_card>
-      </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <a href="/admin/users"
-           class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:border-indigo-300 hover:shadow-md transition-all group">
-          <h3 class="font-semibold text-gray-900 group-hover:text-indigo-600">Manage Users</h3>
-          <p class="text-sm text-gray-500 mt-1">Create users, generate OTP tokens, regenerate access tokens.</p>
-        </a>
-        <a href="/admin/shellies"
-           class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:border-emerald-300 hover:shadow-md transition-all group">
-          <h3 class="font-semibold text-gray-900 group-hover:text-emerald-600">Manage Shellies</h3>
-          <p class="text-sm text-gray-500 mt-1">Register and manage Shelly IoT devices with IP addresses.</p>
-        </a>
-        <a href="/admin/notifications"
-           class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:border-amber-300 hover:shadow-md transition-all group">
-          <h3 class="font-semibold text-gray-900 group-hover:text-amber-600">Send Notifications</h3>
-          <p class="text-sm text-gray-500 mt-1">Broadcast notifications to all connected devices.</p>
-        </a>
+        <.stat_card label="Shelly Alert Triggers" value={@alert_count}
+                    href="/admin/alerts" link_label="View alert history" color="red">
+          <:icon>
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </:icon>
+        </.stat_card>
+
+        <.stat_card label="Live WS Connections" value={@ws_connection_count}
+                    link_label="Authenticated users online" color="teal">
+          <:icon>
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+            </svg>
+          </:icon>
+        </.stat_card>
       </div>
     </div>
     """

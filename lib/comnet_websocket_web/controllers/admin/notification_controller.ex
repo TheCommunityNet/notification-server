@@ -3,17 +3,30 @@ defmodule ComnetWebsocketWeb.Admin.NotificationController do
 
   plug :put_layout, html: {ComnetWebsocketWeb.Layouts, :app}
 
-  import Ecto.Query
+  import ComnetWebsocketWeb.AdminPagination
 
   alias ComnetWebsocket.{Repo, Constants}
   alias ComnetWebsocket.Models.Notification
   alias ComnetWebsocket.Services.NotificationService
 
-  def index(conn, _params) do
-    notifications =
-      Repo.all(from n in Notification, order_by: [desc: n.inserted_at], limit: 100)
+  @per_page 25
 
-    render(conn, :index, page_title: "Notifications", notifications: notifications)
+  def index(conn, params) do
+    page = parse_page(params)
+    notifications = NotificationService.list_notifications(page: page, per_page: @per_page)
+    total_count = Repo.aggregate(Notification, :count)
+    total_pages = total_pages(total_count, @per_page)
+    base_path = pagination_base_path("/admin/notifications", params)
+
+    render(conn, :index,
+      page_title: "Notifications",
+      notifications: notifications,
+      total_count: total_count,
+      page: page,
+      total_pages: total_pages,
+      per_page: @per_page,
+      base_path: base_path
+    )
   end
 
   def send_notification(conn, %{"notification" => params}) do

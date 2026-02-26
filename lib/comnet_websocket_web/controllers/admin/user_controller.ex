@@ -3,12 +3,30 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
 
   plug :put_layout, html: {ComnetWebsocketWeb.Layouts, :app}
 
+  import ComnetWebsocketWeb.AdminPagination
+
   alias ComnetWebsocket.Services.{UserService, ShellyService}
 
-  def index(conn, _params) do
-    users = UserService.list_users_with_shellies()
+  @per_page 20
+
+  def index(conn, params) do
+    page = parse_page(params)
+    users = UserService.list_users_with_shellies(page: page, per_page: @per_page)
     all_shellies = ShellyService.list_shellies()
-    render(conn, :index, page_title: "Users", users: users, all_shellies: all_shellies)
+    total_count = UserService.count_users()
+    total_pages = total_pages(total_count, @per_page)
+    base_path = pagination_base_path("/admin/users", params)
+
+    render(conn, :index,
+      page_title: "Users",
+      users: users,
+      all_shellies: all_shellies,
+      total_count: total_count,
+      page: page,
+      total_pages: total_pages,
+      per_page: @per_page,
+      base_path: base_path
+    )
   end
 
   def create(conn, %{"user" => user_params}) do

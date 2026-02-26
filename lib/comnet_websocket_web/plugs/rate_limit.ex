@@ -71,7 +71,8 @@ defmodule ComnetWebsocketWeb.Plugs.RateLimit do
           conn
           |> put_status(:too_many_requests)
           |> json(%{
-            error: "Rate limit exceeded. Maximum #{max_requests} requests per #{window_seconds} seconds."
+            error:
+              "Rate limit exceeded. Maximum #{max_requests} requests per #{window_seconds} seconds."
           })
           |> halt()
         end

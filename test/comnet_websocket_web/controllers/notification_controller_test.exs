@@ -219,7 +219,8 @@ defmodule ComnetWebsocketWeb.NotificationControllerTest do
       # Make 10 requests (the limit)
       for _i <- 1..10 do
         conn = get(conn, ~p"/api/v1/notification/device/#{device_id}")
-        assert conn.status in [200, 400] # 200 for success, 400 if no device_id in path
+        # 200 for success, 400 if no device_id in path
+        assert conn.status in [200, 400]
       end
     end
 
@@ -249,7 +250,8 @@ defmodule ComnetWebsocketWeb.NotificationControllerTest do
 
       # device_2 should still be able to make requests
       conn = get(conn, ~p"/api/v1/notification/device/#{device_id_2}")
-      assert conn.status in [200, 400] # Not rate limited
+      # Not rate limited
+      assert conn.status in [200, 400]
     end
 
     test "rate limit resets after window expires", %{conn: conn, device_id: device_id} do
@@ -268,7 +270,8 @@ defmodule ComnetWebsocketWeb.NotificationControllerTest do
 
       # Now should be able to make requests again
       conn = get(conn, ~p"/api/v1/notification/device/#{device_id}")
-      assert conn.status in [200, 400] # Not rate limited anymore
+      # Not rate limited anymore
+      assert conn.status in [200, 400]
     end
   end
 end

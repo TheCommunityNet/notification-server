@@ -46,6 +46,10 @@ defmodule ComnetWebsocket.Models.User do
     |> put_change(:access_token, generate_access_token())
   end
 
+  def verify_otp_changeset(user, device_id) do
+    Ecto.Changeset.change(user, device_id: device_id, otp_token: nil)
+  end
+
   def generate_otp_changeset(user) do
     Ecto.Changeset.change(user, otp_token: generate_otp_token())
   end

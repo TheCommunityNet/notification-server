@@ -47,7 +47,7 @@ defmodule ComnetWebsocketWeb.Admin.ShellyHTML do
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h3 class="text-base font-semibold text-gray-900">Registered Shellies</h3>
-          <span class="text-xs text-gray-400"><%= length(@shellies) %> total</span>
+          <span class="text-xs text-gray-400"><%= @total_count %> total</span>
         </div>
 
         <%= if @shellies == [] do %>
@@ -80,6 +80,9 @@ defmodule ComnetWebsocketWeb.Admin.ShellyHTML do
                         <.dropdown_item href={"/admin/shellies/#{shelly.id}/edit"}>
                           Edit
                         </.dropdown_item>
+                        <.dropdown_item href={"/admin/alerts?shelly_id=#{shelly.id}"}>
+                          View Alert History
+                        </.dropdown_item>
                         <.dropdown_divider />
                         <form action={"/admin/shellies/#{shelly.id}"} method="post">
                           <input type="hidden" name="_method" value="delete" />
@@ -95,6 +98,8 @@ defmodule ComnetWebsocketWeb.Admin.ShellyHTML do
               </tbody>
             </table>
           </div>
+          <.pagination page={@page} total_pages={@total_pages} base_path={@base_path}
+                       total_count={@total_count} per_page={@per_page} />
         <% end %>
       </div>
     </div>

@@ -48,6 +48,8 @@ defmodule ComnetWebsocketWeb.Router do
     patch "/shellies/:id", ShellyController, :update
     delete "/shellies/:id", ShellyController, :delete
 
+    get "/alerts", AlertController, :index
+
     get "/notifications", NotificationController, :index
     post "/notifications", NotificationController, :send_notification
   end
@@ -59,6 +61,12 @@ defmodule ComnetWebsocketWeb.Router do
     pipe_through :api
 
     scope "/v1" do
+      post "/auth/verify_otp", AuthController, :verify_otp
+
+      get "/shellies", ShellyController, :index
+      post "/alert/send", AlertController, :send_all_alerts
+      post "/alert/:shelly_id/send", AlertController, :send_alert
+
       post "/notification/send", NotificationController, :send_notification
       post "/notification/send_old", NotificationController, :send_old_notification
 

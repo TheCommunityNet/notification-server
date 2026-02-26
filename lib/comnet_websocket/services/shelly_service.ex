@@ -4,9 +4,18 @@ defmodule ComnetWebsocket.Services.ShellyService do
   alias ComnetWebsocket.Repo
   alias ComnetWebsocket.Models.Shelly
 
-  @spec list_shellies() :: [Shelly.t()]
-  def list_shellies do
-    Repo.all(from s in Shelly, order_by: [desc: s.inserted_at])
+  @spec list_shellies(keyword()) :: [Shelly.t()]
+  def list_shellies(opts \\ []) do
+    page = max(1, Keyword.get(opts, :page, 1))
+    per_page = Keyword.get(opts, :per_page, 25)
+    offset = (page - 1) * per_page
+
+    Repo.all(
+      from s in Shelly,
+        order_by: [desc: s.inserted_at],
+        limit: ^per_page,
+        offset: ^offset
+    )
   end
 
   @spec get_shelly(String.t()) :: Shelly.t() | nil

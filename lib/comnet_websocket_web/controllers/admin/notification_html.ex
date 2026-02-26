@@ -26,8 +26,8 @@ defmodule ComnetWebsocketWeb.Admin.NotificationHTML do
 
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 class="text-base font-semibold text-gray-900">Recent Notifications</h3>
-          <span class="text-xs text-gray-400"><%= length(@notifications) %> shown (latest 100)</span>
+          <h3 class="text-base font-semibold text-gray-900">All Notifications</h3>
+          <span class="text-xs text-gray-400"><%= @total_count %> total</span>
         </div>
 
         <%= if @notifications == [] do %>
@@ -83,6 +83,8 @@ defmodule ComnetWebsocketWeb.Admin.NotificationHTML do
               </tbody>
             </table>
           </div>
+          <.pagination page={@page} total_pages={@total_pages} base_path={@base_path}
+                       total_count={@total_count} per_page={@per_page} />
         <% end %>
       </div>
     </div>

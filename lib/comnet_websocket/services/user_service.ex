@@ -9,10 +9,16 @@ defmodule ComnetWebsocket.Services.UserService do
     Repo.all(from u in User, order_by: [desc: u.inserted_at])
   end
 
-  @spec list_users_with_shellies() :: [User.t()]
-  def list_users_with_shellies do
+  @spec list_users_with_shellies(keyword()) :: [User.t()]
+  def list_users_with_shellies(opts \\ []) do
+    page = max(1, Keyword.get(opts, :page, 1))
+    per_page = Keyword.get(opts, :per_page, 20)
+    offset = (page - 1) * per_page
+
     User
     |> order_by([u], desc: u.inserted_at)
+    |> limit(^per_page)
+    |> offset(^offset)
     |> Repo.all()
     |> Repo.preload(:shellies)
   end
@@ -60,6 +66,30 @@ defmodule ComnetWebsocket.Services.UserService do
     %User{}
     |> User.admin_create_changeset(attrs)
     |> Repo.insert()
+  end
+
+  @spec get_user_by_otp_token(String.t()) :: User.t() | nil
+  def get_user_by_otp_token(otp_token) do
+    Repo.get_by(User, otp_token: otp_token)
+  end
+
+  @spec get_user_by_access_token(String.t()) :: User.t() | nil
+  def get_user_by_access_token(access_token) do
+    Repo.get_by(User, access_token: access_token)
+  end
+
+  @spec verify_otp(String.t(), String.t()) ::
+          {:ok, User.t()} | {:error, :invalid_otp} | {:error, Ecto.Changeset.t()}
+  def verify_otp(otp_token, device_id) do
+    case get_user_by_otp_token(otp_token) do
+      nil ->
+        {:error, :invalid_otp}
+
+      user ->
+        user
+        |> User.verify_otp_changeset(device_id)
+        |> Repo.update()
+    end
   end
 
   @spec generate_otp_token(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
