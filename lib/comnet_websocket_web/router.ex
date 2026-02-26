@@ -48,6 +48,8 @@ defmodule ComnetWebsocketWeb.Router do
     patch "/shellies/:id", ShellyController, :update
     delete "/shellies/:id", ShellyController, :delete
 
+    get "/devices", DeviceController, :index
+
     get "/alerts", AlertController, :index
 
     get "/notifications", NotificationController, :index
