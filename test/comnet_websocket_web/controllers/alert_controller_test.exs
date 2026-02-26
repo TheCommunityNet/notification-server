@@ -3,7 +3,7 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
 
   alias ComnetWebsocket.Repo
   alias ComnetWebsocket.Models.{User, Shelly, ShellyAlert}
-  alias ComnetWebsocket.Services.UserService
+  alias ComnetWebsocket.Services.{AlertService, UserService}
 
   # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -40,21 +40,29 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
 
   defp alert_count, do: Repo.aggregate(ShellyAlert, :count)
 
-  # ── POST /api/v1/alert/:shelly_id/send ────────────────────────────────────────
+  # Ensures any running dispatch task for the shelly is stopped after the test
+  defp stop_task_if_running(shelly) do
+    AlertService.stop_shelly_task(shelly.id)
+  end
 
-  describe "POST /api/v1/alert/:shelly_id/send" do
-    test "records alert and returns success for owned shelly", %{conn: conn} do
+  # ── POST /api/v1/alert/:shelly_id/toggle ─────────────────────────────────────
+
+  describe "POST /api/v1/alert/:shelly_id/toggle" do
+    test "starts relay and returns action=started for owned shelly", %{conn: conn} do
       user = create_user()
       shelly = create_shelly(%{name: "Living Room"})
       assign_shelly(user, shelly)
 
+      on_exit(fn -> stop_task_if_running(shelly) end)
+
       conn =
         conn
         |> auth_conn(user)
-        |> post(~p"/api/v1/alert/#{shelly.id}/send")
+        |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
 
       assert %{
                "success" => true,
+               "action" => "started",
                "alert_id" => alert_id,
                "shelly_id" => shelly_id,
                "triggered_at" => triggered_at
@@ -65,22 +73,64 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
       assert is_binary(triggered_at)
     end
 
-    test "saves the alert record in the database", %{conn: conn} do
+    test "saves the alert record in the database on start", %{conn: conn} do
       user = create_user()
       shelly = create_shelly()
       assign_shelly(user, shelly)
+
+      on_exit(fn -> stop_task_if_running(shelly) end)
 
       before_count = alert_count()
 
       conn
       |> auth_conn(user)
-      |> post(~p"/api/v1/alert/#{shelly.id}/send")
+      |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
 
       assert alert_count() == before_count + 1
 
       alert = Repo.get_by!(ShellyAlert, shelly_id: shelly.id, user_id: user.id)
       assert alert.shelly_id == shelly.id
       assert alert.user_id == user.id
+    end
+
+    test "stops relay and returns action=stopped when task is already running", %{conn: conn} do
+      user = create_user()
+      shelly = create_shelly()
+      assign_shelly(user, shelly)
+
+      # First call: starts the task
+      conn
+      |> auth_conn(user)
+      |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
+
+      # Second call: should toggle off
+      conn =
+        conn
+        |> auth_conn(user)
+        |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
+
+      assert %{
+               "success" => true,
+               "action" => "stopped",
+               "shelly_id" => shelly_id
+             } = json_response(conn, 200)
+
+      assert shelly_id == to_string(shelly.id)
+    end
+
+    test "does not create an extra alert record when stopping", %{conn: conn} do
+      user = create_user()
+      shelly = create_shelly()
+      assign_shelly(user, shelly)
+
+      # Start
+      conn |> auth_conn(user) |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
+      count_after_start = alert_count()
+
+      # Stop — must not insert another alert
+      conn |> auth_conn(user) |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
+
+      assert alert_count() == count_after_start
     end
 
     test "returns 403 when shelly exists but is not assigned to the user", %{conn: conn} do
@@ -92,7 +142,7 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
       conn =
         conn
         |> auth_conn(user)
-        |> post(~p"/api/v1/alert/#{shelly.id}/send")
+        |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
 
       assert %{"error" => "You do not have access to this shelly"} = json_response(conn, 403)
     end
@@ -107,7 +157,7 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
 
       conn
       |> auth_conn(user)
-      |> post(~p"/api/v1/alert/#{shelly.id}/send")
+      |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
 
       assert alert_count() == before_count
     end
@@ -119,14 +169,14 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
       conn =
         conn
         |> auth_conn(user)
-        |> post(~p"/api/v1/alert/#{fake_id}/send")
+        |> post(~p"/api/v1/alert/#{fake_id}/toggle")
 
       assert %{"error" => "Shelly not found"} = json_response(conn, 404)
     end
 
     test "returns 401 without authorization header", %{conn: conn} do
       shelly = create_shelly()
-      conn = post(conn, ~p"/api/v1/alert/#{shelly.id}/send")
+      conn = post(conn, ~p"/api/v1/alert/#{shelly.id}/toggle")
 
       assert conn.status == 401
     end
@@ -137,57 +187,106 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
       conn =
         conn
         |> put_req_header("authorization", "Bearer wrong-token")
-        |> post(~p"/api/v1/alert/#{shelly.id}/send")
+        |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
 
       assert conn.status == 401
     end
   end
 
-  # ── POST /api/v1/alert/send ───────────────────────────────────────────────────
+  # ── POST /api/v1/alert/toggle ─────────────────────────────────────────────────
 
-  describe "POST /api/v1/alert/send" do
-    test "triggers all assigned shellies and returns results", %{conn: conn} do
+  describe "POST /api/v1/alert/toggle" do
+    test "starts all assigned shellies and returns action=started for each", %{conn: conn} do
       user = create_user()
       shelly_a = create_shelly(%{name: "Shelly A"})
       shelly_b = create_shelly(%{name: "Shelly B"})
       assign_shelly(user, shelly_a)
       assign_shelly(user, shelly_b)
 
-      conn = conn |> auth_conn(user) |> post(~p"/api/v1/alert/send")
+      on_exit(fn ->
+        stop_task_if_running(shelly_a)
+        stop_task_if_running(shelly_b)
+      end)
+
+      conn = conn |> auth_conn(user) |> post(~p"/api/v1/alert/toggle")
 
       assert %{"data" => results} = json_response(conn, 200)
       assert length(results) == 2
 
       Enum.each(results, fn r ->
         assert r["success"] == true
+        assert r["action"] == "started"
         assert is_binary(r["alert_id"])
         assert r["shelly_id"] in [to_string(shelly_a.id), to_string(shelly_b.id)]
       end)
     end
 
-    test "saves an alert record for each shelly", %{conn: conn} do
+    test "stops all running shellies and returns action=stopped for each", %{conn: conn} do
       user = create_user()
       shelly_a = create_shelly(%{name: "A"})
       shelly_b = create_shelly(%{name: "B"})
       assign_shelly(user, shelly_a)
       assign_shelly(user, shelly_b)
 
+      # First call: start all
+      conn |> auth_conn(user) |> post(~p"/api/v1/alert/toggle")
+
+      # Second call: stop all
+      conn = conn |> auth_conn(user) |> post(~p"/api/v1/alert/toggle")
+
+      assert %{"data" => results} = json_response(conn, 200)
+      assert length(results) == 2
+
+      Enum.each(results, fn r ->
+        assert r["success"] == true
+        assert r["action"] == "stopped"
+        refute Map.has_key?(r, "alert_id")
+      end)
+    end
+
+    test "saves an alert record for each shelly on start", %{conn: conn} do
+      user = create_user()
+      shelly_a = create_shelly(%{name: "A"})
+      shelly_b = create_shelly(%{name: "B"})
+      assign_shelly(user, shelly_a)
+      assign_shelly(user, shelly_b)
+
+      on_exit(fn ->
+        stop_task_if_running(shelly_a)
+        stop_task_if_running(shelly_b)
+      end)
+
       before_count = alert_count()
 
-      conn |> auth_conn(user) |> post(~p"/api/v1/alert/send")
+      conn |> auth_conn(user) |> post(~p"/api/v1/alert/toggle")
 
       assert alert_count() == before_count + 2
+    end
+
+    test "does not create alert records when stopping", %{conn: conn} do
+      user = create_user()
+      shelly_a = create_shelly(%{name: "A"})
+      shelly_b = create_shelly(%{name: "B"})
+      assign_shelly(user, shelly_a)
+      assign_shelly(user, shelly_b)
+
+      conn |> auth_conn(user) |> post(~p"/api/v1/alert/toggle")
+      count_after_start = alert_count()
+
+      conn |> auth_conn(user) |> post(~p"/api/v1/alert/toggle")
+
+      assert alert_count() == count_after_start
     end
 
     test "returns empty data when user has no shellies", %{conn: conn} do
       user = create_user()
 
-      conn = conn |> auth_conn(user) |> post(~p"/api/v1/alert/send")
+      conn = conn |> auth_conn(user) |> post(~p"/api/v1/alert/toggle")
 
       assert %{"data" => []} = json_response(conn, 200)
     end
 
-    test "only triggers shellies assigned to the authenticated user", %{conn: conn} do
+    test "only toggles shellies assigned to the authenticated user", %{conn: conn} do
       user = create_user("User A")
       other_user = create_user("User B")
       my_shelly = create_shelly(%{name: "Mine"})
@@ -195,7 +294,9 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
       assign_shelly(user, my_shelly)
       assign_shelly(other_user, other_shelly)
 
-      conn = conn |> auth_conn(user) |> post(~p"/api/v1/alert/send")
+      on_exit(fn -> stop_task_if_running(my_shelly) end)
+
+      conn = conn |> auth_conn(user) |> post(~p"/api/v1/alert/toggle")
 
       assert %{"data" => results} = json_response(conn, 200)
       assert length(results) == 1
@@ -203,7 +304,7 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
     end
 
     test "returns 401 without authorization header", %{conn: conn} do
-      conn = post(conn, ~p"/api/v1/alert/send")
+      conn = post(conn, ~p"/api/v1/alert/toggle")
 
       assert conn.status == 401
     end
@@ -212,7 +313,7 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
       conn =
         conn
         |> put_req_header("authorization", "Bearer bad-token")
-        |> post(~p"/api/v1/alert/send")
+        |> post(~p"/api/v1/alert/toggle")
 
       assert conn.status == 401
     end

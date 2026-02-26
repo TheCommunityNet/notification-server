@@ -27,6 +27,78 @@ defmodule ComnetWebsocket.Services.AlertService do
   end
 
   @doc """
+  Toggles a specific shelly for the given user.
+
+  If a dispatch task is already running for the shelly, it is stopped and the
+  relay is turned off immediately. Otherwise a new alert is recorded and the
+  3-cycle dispatch task is started.
+
+  Returns `{:ok, :stopped}`, `{:ok, ShellyAlert.t()}`, `{:error, :forbidden}`,
+  or `{:error, :not_found}`.
+  """
+  @spec toggle_shelly(User.t(), String.t()) ::
+          {:ok, :stopped | ShellyAlert.t()}
+          | {:error, :forbidden | :not_found | Ecto.Changeset.t()}
+  def toggle_shelly(%User{id: user_id} = _user, shelly_id) do
+    shelly =
+      from(s in Shelly,
+        join: us in "user_shellies",
+        on: us.shelly_id == s.id,
+        where: s.id == ^shelly_id and us.user_id == type(^user_id, UUIDv7)
+      )
+      |> Repo.one()
+
+    case shelly do
+      nil ->
+        case Repo.get(Shelly, shelly_id) do
+          nil -> {:error, :not_found}
+          _shelly -> {:error, :forbidden}
+        end
+
+      shelly ->
+        if task_running?(shelly.id) do
+          stop_shelly_task(shelly.id)
+          {:ok, :stopped}
+        else
+          result = record_alert(shelly.id, user_id)
+          if match?({:ok, _}, result), do: dispatch_to_shelly(shelly)
+          result
+        end
+    end
+  end
+
+  @doc """
+  Toggles all shellies assigned to the user.
+
+  Each shelly is independently toggled: stopped if already running, started otherwise.
+  Returns a list of per-shelly results.
+  """
+  @spec toggle_all_shellies(User.t()) :: [map()]
+  def toggle_all_shellies(%User{id: user_id} = _user) do
+    shellies =
+      from(s in Shelly,
+        join: us in "user_shellies",
+        on: us.shelly_id == s.id,
+        where: us.user_id == type(^user_id, UUIDv7)
+      )
+      |> Repo.all()
+
+    Enum.map(shellies, fn shelly ->
+      result =
+        if task_running?(shelly.id) do
+          stop_shelly_task(shelly.id)
+          {:ok, :stopped}
+        else
+          r = record_alert(shelly.id, user_id)
+          if match?({:ok, _}, r), do: dispatch_to_shelly(shelly)
+          r
+        end
+
+      %{shelly_id: shelly.id, shelly_name: shelly.name, result: result}
+    end)
+  end
+
+  @doc """
   Triggers an alert on a specific shelly, provided the user has access to it.
 
   Returns `{:error, :forbidden}` if the shelly is not assigned to the user.
@@ -204,6 +276,10 @@ defmodule ComnetWebsocket.Services.AlertService do
         relay_switch(ip_address, "off", 0)
         :ok
     end
+  end
+
+  defp task_running?(shelly_id) do
+    Agent.get(@task_registry, &Map.has_key?(&1, shelly_id))
   end
 
   defp dispatch_to_shelly(%Shelly{id: shelly_id, ip_address: ip_address}) do

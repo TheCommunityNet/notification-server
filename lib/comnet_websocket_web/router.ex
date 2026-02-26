@@ -66,8 +66,8 @@ defmodule ComnetWebsocketWeb.Router do
       post "/auth/verify_otp", AuthController, :verify_otp
 
       get "/shellies", ShellyController, :index
-      post "/alert/send", AlertController, :send_all_alerts
-      post "/alert/:shelly_id/send", AlertController, :send_alert
+      post "/alert/toggle", AlertController, :toggle_all_alerts
+      post "/alert/:shelly_id/toggle", AlertController, :toggle_alert
 
       post "/notification/send", NotificationController, :send_notification
       post "/notification/send_old", NotificationController, :send_old_notification
