@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <title>Comnet Admin</title>
-    <link phx-track="static" rel="stylesheet" href={Phoenix.VerifiedRoutes.static_path(ComnetWebsocketWeb.Endpoint, "/assets/app.css")} />
+    <link phx-track="static" rel="stylesheet" href={Phoenix.VerifiedRoutes.static_path(ComnetWebsocketWeb.Endpoint, "/assets/css/app.css")} />
     <script>
       document.addEventListener('toggle', function (e) {
         if (e.newState !== 'open' || !e.target.hasAttribute('popover')) return;

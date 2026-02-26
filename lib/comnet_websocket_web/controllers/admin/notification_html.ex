@@ -43,40 +43,44 @@ defmodule ComnetWebsocketWeb.Admin.NotificationHTML do
                   <th class="px-6 py-3 text-left">Content</th>
                   <th class="px-6 py-3 text-left">Category</th>
                   <th class="px-6 py-3 text-left">Type</th>
+                  <th class="px-6 py-3 text-right">Devices received</th>
                   <th class="px-6 py-3 text-left">Status</th>
                   <th class="px-6 py-3 text-left">Expires</th>
                   <th class="px-6 py-3 text-left">Sent At</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100">
-                <%= for notif <- @notifications do %>
+                <%= for item <- @notifications do %>
                   <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-6 py-4 font-medium text-gray-900">
-                      <%= get_in(notif.payload || %{}, ["title"]) || "—" %>
+                      <%= get_in(item.notification.payload || %{}, ["title"]) || "—" %>
                     </td>
-                    <td class="px-6 py-4 text-gray-500 max-w-xs truncate">
-                      <%= get_in(notif.payload || %{}, ["content"]) || "—" %>
+                    <td class="px-6 py-4 text-gray-500 max-w-50 truncate">
+                      <%= get_in(item.notification.payload || %{}, ["content"]) || "—" %>
                     </td>
                     <td class="px-6 py-4">
-                      <.badge color={if notif.category == "emergency", do: "red", else: "gray"}>
-                        <%= notif.category || "—" %>
+                      <.badge color={if item.notification.category == "emergency", do: "red", else: "gray"}>
+                        <%= item.notification.category || "—" %>
                       </.badge>
                     </td>
                     <td class="px-6 py-4">
-                      <.badge color={if notif.type == "device", do: "blue", else: "purple"}>
-                        <%= notif.type %>
+                      <.badge color={if item.notification.type == "device", do: "blue", else: "purple"}>
+                        <%= item.notification.type %>
                       </.badge>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600 text-right">
+                      <%= item.devices_received_count %>
                     </td>
                     <td class="px-6 py-4">
-                      <.badge color={if notif.is_expired, do: "red", else: "green"}>
-                        <%= if notif.is_expired, do: "Expired", else: "Active" %>
+                      <.badge color={if item.notification.is_expired, do: "red", else: "green"}>
+                        <%= if item.notification.is_expired, do: "Expired", else: "Active" %>
                       </.badge>
                     </td>
-                    <td class="px-6 py-4 text-xs text-gray-400">
-                      <%= Calendar.strftime(notif.expired_at, "%Y-%m-%d %H:%M") %>
+                    <td class="px-6 py-4 text-xs text-gray-400 min-w-40">
+                      <%= Calendar.strftime(item.notification.expired_at, "%Y-%m-%d %H:%M") %>
                     </td>
-                    <td class="px-6 py-4 text-xs text-gray-400">
-                      <%= Calendar.strftime(notif.inserted_at, "%Y-%m-%d %H:%M") %>
+                    <td class="px-6 py-4 text-xs text-gray-400 min-w-40">
+                      <%= Calendar.strftime(item.notification.inserted_at, "%Y-%m-%d %H:%M") %>
                     </td>
                   </tr>
                 <% end %>

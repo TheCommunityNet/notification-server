@@ -35,24 +35,36 @@ defmodule ComnetWebsocket.Services.NotificationService do
 
   @doc """
   Lists all notifications with pagination, ordered newest first.
+  Each item includes the notification and the number of devices that received it.
 
   Options:
     - `:page`     – 1-based page number (default 1)
     - `:per_page` – records per page (default 25)
   """
-  @spec list_notifications(keyword()) :: [Notification.t()]
+  @spec list_notifications(keyword()) :: [
+          %{notification: Notification.t(), devices_received_count: non_neg_integer()}
+        ]
   def list_notifications(opts \\ []) do
     page = max(1, Keyword.get(opts, :page, 1))
     per_page = Keyword.get(opts, :per_page, 25)
     offset = (page - 1) * per_page
 
-    Repo.all(
-      from n in Notification,
-        where: n.category == ^Constants.notification_category_emergency(),
-        order_by: [desc: n.inserted_at],
-        limit: ^per_page,
-        offset: ^offset
+    device_received_subquery =
+      from nt in NotificationTracking,
+        where: nt.is_received and not is_nil(nt.device_id),
+        group_by: nt.notification_key,
+        select: %{notification_key: nt.notification_key, count: count(nt.id)}
+
+    from(n in Notification,
+      left_join: dr in subquery(device_received_subquery),
+      on: dr.notification_key == n.key,
+      where: n.category == ^Constants.notification_category_emergency(),
+      order_by: [desc: n.inserted_at],
+      limit: ^per_page,
+      offset: ^offset,
+      select: %{notification: n, devices_received_count: coalesce(dr.count, 0)}
     )
+    |> Repo.all()
   end
 
   @spec count_notifications() :: integer()

@@ -25,7 +25,17 @@ config :comnet_websocket, ComnetWebsocketWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "Zs0xeIROdbrdUyj8qQ93yRFaUnOvTr5sn/QC0fMuvZVuQbS8vlUmdDvwcgQEQje9",
   watchers: [
-    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+    tailwind: {Tailwind, :install_and_run, [:comnet_websocket, ~w(--watch)]}
+  ]
+
+config :comnet_websocket, ComnetWebsocketWeb.Endpoint,
+  live_reload: [
+    web_console_logger: true,
+    patterns: [
+      ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"priv/gettext/.*(po)$",
+      ~r"lib/comnet_websocket_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$"
+    ]
   ]
 
 # ## SSL Support
