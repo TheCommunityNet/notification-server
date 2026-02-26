@@ -52,7 +52,8 @@ defmodule ComnetWebsocket.MixProject do
       {:sentry, "~> 11.0.4"},
       {:hackney, "~> 1.20"},
       {:uuidv7, "~> 1.0"},
-      {:req, "~> 0.5"}
+      {:req, "~> 0.5"},
+      {:tailwind, "~> 0.3", runtime: Mix.env() == :dev}
     ]
   end
 
@@ -64,9 +65,12 @@ defmodule ComnetWebsocket.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup"],
+      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
+      "assets.setup": ["tailwind.install --if-missing"],
+      "assets.build": ["compile", "tailwind comnet_websocket"],
+      "assets.deploy": ["tailwind comnet_websocket --minify", "phx.digest"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
     ]

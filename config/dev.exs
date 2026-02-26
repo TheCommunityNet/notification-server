@@ -24,7 +24,9 @@ config :comnet_websocket, ComnetWebsocketWeb.Endpoint,
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "Zs0xeIROdbrdUyj8qQ93yRFaUnOvTr5sn/QC0fMuvZVuQbS8vlUmdDvwcgQEQje9",
-  watchers: []
+  watchers: [
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+  ]
 
 # ## SSL Support
 #

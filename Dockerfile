@@ -46,7 +46,7 @@ RUN mkdir config
 COPY config/config.exs config/${MIX_ENV}.exs config/
 RUN mix deps.compile
 
-# RUN mix assets.setup
+RUN mix assets.setup
 
 COPY priv priv
 
@@ -58,7 +58,7 @@ RUN mix compile
 COPY assets assets
 
 # compile assets
-# RUN mix assets.deploy
+RUN mix assets.deploy
 
 # Changes to config/runtime.exs don't require recompiling the code
 COPY config/runtime.exs config/

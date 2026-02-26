@@ -37,6 +37,17 @@ config :comnet_websocket, :admin_auth,
   username: System.get_env("ADMIN_USERNAME", "admin"),
   password: System.get_env("ADMIN_PASSWORD", "admin")
 
+# Tailwind: build CSS locally (no CDN / no internet at runtime)
+config :tailwind,
+  version: "4.1.7",
+  comnet_websocket: [
+    args: ~w(
+      --input=assets/css/app.css
+      --output=priv/static/assets/css/app.css
+    ),
+    cd: Path.expand("..", __DIR__)
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
