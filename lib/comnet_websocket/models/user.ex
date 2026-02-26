@@ -51,7 +51,9 @@ defmodule ComnetWebsocket.Models.User do
   end
 
   def generate_otp_changeset(user) do
-    Ecto.Changeset.change(user, otp_token: generate_otp_token())
+    user
+    |> Ecto.Changeset.change(otp_token: generate_otp_token())
+    |> unique_constraint(:otp_token)
   end
 
   def regenerate_access_token_changeset(user) do
@@ -59,7 +61,7 @@ defmodule ComnetWebsocket.Models.User do
   end
 
   defp generate_otp_token do
-    :crypto.strong_rand_bytes(3) |> Base.encode16()
+    :crypto.strong_rand_bytes(4) |> Base.encode16(case: :lower)
   end
 
   defp generate_access_token do

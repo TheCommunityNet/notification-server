@@ -3,6 +3,7 @@ defmodule ComnetWebsocketWeb.AuthControllerTest do
 
   alias ComnetWebsocket.Repo
   alias ComnetWebsocket.Models.User
+  alias ComnetWebsocket.Services.UserService
 
   defp create_user_with_otp(attrs \\ %{}) do
     {:ok, user} =
@@ -10,7 +11,7 @@ defmodule ComnetWebsocketWeb.AuthControllerTest do
       |> User.admin_create_changeset(%{name: Map.get(attrs, :name, "Test User")})
       |> Repo.insert()
 
-    {:ok, user} = User.generate_otp_changeset(user) |> Repo.update()
+    {:ok, user} = UserService.generate_otp_token(user)
     user
   end
 

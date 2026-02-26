@@ -93,10 +93,29 @@ defmodule ComnetWebsocket.Services.UserService do
   end
 
   @spec generate_otp_token(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  def generate_otp_token(user) do
-    user
-    |> User.generate_otp_changeset()
-    |> Repo.update()
+  def generate_otp_token(user, retries_left \\ 3) do
+    case user |> User.generate_otp_changeset() |> Repo.update() do
+      {:ok, user} ->
+        {:ok, user}
+
+      {:error, %{errors: errors} = changeset} when retries_left > 0 ->
+        if otp_token_unique_error?(errors) do
+          user = Repo.get(User, user.id)
+          generate_otp_token(user, retries_left - 1)
+        else
+          {:error, changeset}
+        end
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  defp otp_token_unique_error?(errors) do
+    case Keyword.get(errors, :otp_token) do
+      {_, opts} when is_list(opts) -> Keyword.get(opts, :constraint) == :unique
+      _ -> false
+    end
   end
 
   @spec regenerate_access_token(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
