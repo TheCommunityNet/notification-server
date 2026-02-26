@@ -50,13 +50,11 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppControllerTest do
                  device_id: attrs["device_id"]
                })
 
-      # Try to create duplicate
-      # TODO: Controller tries to encode changeset directly which will cause Jason.Encoder error
-      # This test documents the current behavior - the controller needs to be fixed to
-      # properly serialize changeset errors
-      assert_raise Protocol.UndefinedError, fn ->
-        post(conn, ~p"/api/v1/unified_push_app", attrs)
-      end
+      # Try to create duplicate - controller returns 422 with success: false
+      conn = post(conn, ~p"/api/v1/unified_push_app", attrs)
+
+      assert conn.status == 422
+      assert %{"success" => false} = json_response(conn, 422)
     end
   end
 

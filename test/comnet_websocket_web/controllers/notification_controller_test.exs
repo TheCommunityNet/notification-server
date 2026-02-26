@@ -45,7 +45,7 @@ defmodule ComnetWebsocketWeb.NotificationControllerTest do
     } do
       conn = get(conn, ~p"/api/v1/notification/device/#{device_id}")
 
-      assert %{"messages" => messages} = json_response(conn, 200)
+      assert %{"data" => messages} = json_response(conn, 200)
       assert length(messages) == 1
 
       message = List.first(messages)
@@ -76,7 +76,7 @@ defmodule ComnetWebsocketWeb.NotificationControllerTest do
       # After first call, all notifications should be marked as read
       conn = get(conn, ~p"/api/v1/notification/device/#{device_id}")
 
-      assert %{"messages" => []} = json_response(conn, 200)
+      assert %{"data" => []} = json_response(conn, 200)
     end
 
     test "returns only unread notifications", %{
@@ -113,7 +113,7 @@ defmodule ComnetWebsocketWeb.NotificationControllerTest do
 
       conn = get(conn, ~p"/api/v1/notification/device/#{device_id}")
 
-      assert %{"messages" => messages} = json_response(conn, 200)
+      assert %{"data" => messages} = json_response(conn, 200)
       assert length(messages) == 1
       assert List.first(messages)["id"] == notification.key
     end
@@ -150,7 +150,7 @@ defmodule ComnetWebsocketWeb.NotificationControllerTest do
 
       conn = get(conn, ~p"/api/v1/notification/device/#{device_id}")
 
-      assert %{"messages" => []} = json_response(conn, 200)
+      assert %{"data" => []} = json_response(conn, 200)
     end
 
     test "returns bad request when device_id is missing", %{conn: conn} do
@@ -193,7 +193,7 @@ defmodule ComnetWebsocketWeb.NotificationControllerTest do
 
       conn = get(conn, ~p"/api/v1/notification/device/#{device_id}")
 
-      assert %{"messages" => messages} = json_response(conn, 200)
+      assert %{"data" => messages} = json_response(conn, 200)
       assert length(messages) == 4
 
       # Verify all notifications were marked as read

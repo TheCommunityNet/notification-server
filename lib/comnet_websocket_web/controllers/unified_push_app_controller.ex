@@ -20,9 +20,7 @@ defmodule ComnetWebsocketWeb.UnifiedPushAppController do
           url: "https://#{conn.host}/api/v1/unified_push/#{unified_push_app.id}/send"
         })
 
-      {:error, changeset} ->
-        IO.inspect(changeset, label: "UnifiedPushApp creation error")
-
+      {:error, _changeset} ->
         conn
         |> put_status(:unprocessable_entity)
         |> json(%{
