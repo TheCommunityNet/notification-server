@@ -79,6 +79,8 @@ defmodule ComnetWebsocket.Services.AlertService do
     end)
   end
 
+  @task_registry __MODULE__.TaskRegistry
+
   @per_page 50
 
   @doc """
@@ -182,8 +184,52 @@ defmodule ComnetWebsocket.Services.AlertService do
     |> Repo.insert()
   end
 
-  defp dispatch_to_shelly(%Shelly{ip_address: ip_address}) do
-    url = "http://#{ip_address}/relay/0?turn=on"
+  @doc """
+  Stops a running shelly dispatch task for the given shelly ID, if one exists.
+
+  Immediately kills the background task and turns the relay off.
+  Returns `:ok` if the task was stopped, or `{:error, :not_running}` if no
+  active task was found for the given shelly.
+  """
+  @spec stop_shelly_task(String.t()) :: :ok | {:error, :not_running}
+  def stop_shelly_task(shelly_id) do
+    case Agent.get_and_update(@task_registry, fn state ->
+           {Map.get(state, shelly_id), Map.delete(state, shelly_id)}
+         end) do
+      nil ->
+        {:error, :not_running}
+
+      {pid, ip_address} ->
+        Process.exit(pid, :kill)
+        relay_switch(ip_address, "off", 0)
+        :ok
+    end
+  end
+
+  defp dispatch_to_shelly(%Shelly{id: shelly_id, ip_address: ip_address}) do
+    {:ok, pid} =
+      Task.start(fn ->
+        Enum.each(1..3, fn attempt ->
+          if attempt > 1, do: Process.sleep(3_000)
+          relay_switch(ip_address, "on")
+          Process.sleep(5_000)
+          relay_switch(ip_address, "off", 0)
+        end)
+
+        Agent.update(@task_registry, &Map.delete(&1, shelly_id))
+      end)
+
+    Agent.update(@task_registry, &Map.put(&1, shelly_id, {pid, ip_address}))
+    :ok
+  end
+
+  defp relay_switch(ip_address, state, timer \\ 5) do
+    url =
+      if state == "off" do
+        "http://#{ip_address}/relay/0?turn=off"
+      else
+        "http://#{ip_address}/relay/0?turn=#{state}&timer=#{timer}"
+      end
 
     case Req.post(url) do
       {:ok, %{status: status}} when status in 200..299 ->

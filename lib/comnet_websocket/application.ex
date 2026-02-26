@@ -35,6 +35,14 @@ defmodule ComnetWebsocket.Application do
       # Presence tracking
       ComnetWebsocketWeb.Presence,
 
+      # Alert task registry (tracks running shelly dispatch tasks)
+      %{
+        id: :alert_task_registry,
+        start:
+          {Agent, :start_link,
+           [fn -> %{} end, [name: ComnetWebsocket.Services.AlertService.TaskRegistry]]}
+      },
+
       # Background services
       ComnetWebsocket.NotificationCheckExpireScheduler,
       {ComnetWebsocket.ChannelWatcher, :notifications},
