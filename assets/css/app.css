@@ -20,4 +20,9 @@
   display: contents;
 }
 
+.popover {
+  top: anchor(bottom);
+  right: anchor(right);
+}
+
 /* This file is for your main application CSS */

@@ -69,7 +69,7 @@ defmodule ComnetWebsocket.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       "assets.setup": ["tailwind.install --if-missing"],
-      "assets.build": ["compile", "tailwind comnet_websocket"],
+      "assets.build": ["compile", "tailwind comnet_websocket", "copy.vendor_js"],
       "assets.deploy": ["tailwind comnet_websocket --minify", "phx.digest"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]

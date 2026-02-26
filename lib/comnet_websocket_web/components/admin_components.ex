@@ -239,6 +239,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
     ~H"""
     <button
       popovertarget={@id}
+      style="anchor-name: --{@id};"
       class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium
              text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer select-none">
       Actions
@@ -249,8 +250,8 @@ defmodule ComnetWebsocketWeb.AdminComponents do
     <div
       id={@id}
       popover
-      style="position: absolute; inset: auto; margin: 0;"
-      class="bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-44 text-sm">
+      class="bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-44 text-sm absolute inset-auto m-0 mt-1.5 popover"
+      style="position-anchor: --{@id};">
       <%= render_slot(@inner_block) %>
     </div>
     """
