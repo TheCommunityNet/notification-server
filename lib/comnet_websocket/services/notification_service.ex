@@ -48,10 +48,18 @@ defmodule ComnetWebsocket.Services.NotificationService do
 
     Repo.all(
       from n in Notification,
+        where: n.category == ^Constants.notification_category_emergency(),
         order_by: [desc: n.inserted_at],
         limit: ^per_page,
         offset: ^offset
     )
+  end
+
+  @spec count_notifications() :: integer()
+  def count_notifications() do
+    from(n in Notification)
+    |> where(category: ^Constants.notification_category_emergency())
+    |> Repo.aggregate(:count)
   end
 
   @doc """

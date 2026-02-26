@@ -5,14 +5,15 @@ defmodule ComnetWebsocketWeb.Admin.DashboardController do
 
   alias ComnetWebsocket.Services.{UserService, ShellyService}
   alias ComnetWebsocket.Repo
-  alias ComnetWebsocket.Models.{Notification, ShellyAlert}
+  alias ComnetWebsocket.Models.{ShellyAlert}
   alias ComnetWebsocket.Constants
   alias ComnetWebsocketWeb.Presence
+  alias ComnetWebsocket.Services.NotificationService
 
   def index(conn, _params) do
     user_count = UserService.count_users()
     shelly_count = ShellyService.count_shellies()
-    notification_count = Repo.aggregate(Notification, :count)
+    notification_count = NotificationService.count_notifications()
     alert_count = Repo.aggregate(ShellyAlert, :count)
     ws_connection_count = count_ws_connections()
 

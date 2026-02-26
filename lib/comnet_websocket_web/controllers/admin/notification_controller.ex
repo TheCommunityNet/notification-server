@@ -5,8 +5,7 @@ defmodule ComnetWebsocketWeb.Admin.NotificationController do
 
   import ComnetWebsocketWeb.AdminPagination
 
-  alias ComnetWebsocket.{Repo, Constants}
-  alias ComnetWebsocket.Models.Notification
+  alias ComnetWebsocket.Constants
   alias ComnetWebsocket.Services.NotificationService
 
   @per_page 25
@@ -14,7 +13,9 @@ defmodule ComnetWebsocketWeb.Admin.NotificationController do
   def index(conn, params) do
     page = parse_page(params)
     notifications = NotificationService.list_notifications(page: page, per_page: @per_page)
-    total_count = Repo.aggregate(Notification, :count)
+
+    total_count = NotificationService.count_notifications()
+
     total_pages = total_pages(total_count, @per_page)
     base_path = pagination_base_path("/admin/notifications", params)
 
