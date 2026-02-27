@@ -1,0 +1,93 @@
+<div class="space-y-6">
+  <.card>
+    <form action="/admin/shellies" method="get" class="flex flex-wrap gap-4 items-end">
+      <div class="max-w-48 w-full">
+        <.input
+          label="Search"
+          name="search"
+          value={@filters["search"]}
+          placeholder="e.g. name or IP..."
+        />
+      </div>
+      <div class="ml-auto">
+        <.button type="submit">Search</.button>
+        <a
+          :if={@filters != %{}}
+          href="/admin/shellies"
+          class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600
+                    hover:text-gray-900 transition-colors"
+        >
+          Clear
+        </a>
+      </div>
+    </form>
+  </.card>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h3 class="text-base font-semibold text-gray-900">Registered Shellies</h3>
+      <div class="flex items-center gap-3">
+        <a href="/admin/shellies/create">
+          <.button size="sm" color="emerald" type="button">Create</.button>
+        </a>
+      </div>
+    </div>
+
+    <%= if @shellies == [] do %>
+      <div class="px-6 py-12 text-center text-sm text-gray-400">
+        No shellies found.
+      </div>
+    <% else %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+            <tr>
+              <th class="px-6 py-3 text-left">Name</th>
+              <th class="px-6 py-3 text-left">IP Address</th>
+              <th class="px-6 py-3 text-left">Registered</th>
+              <th class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <%= for shelly <- @shellies do %>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 font-medium text-gray-900">{shelly.name}</td>
+                <td class="px-6 py-4">
+                  <.badge>{shelly.ip_address}</.badge>
+                </td>
+                <td class="px-6 py-4 text-xs text-gray-400">
+                  {Calendar.strftime(shelly.inserted_at, "%Y-%m-%d %H:%M")}
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <.dropdown id={"shelly-actions-#{shelly.id}"}>
+                    <.dropdown_item href={"/admin/shellies/#{shelly.id}/edit"}>
+                      Edit
+                    </.dropdown_item>
+                    <.dropdown_item href={"/admin/alerts?shelly_id=#{shelly.id}"}>
+                      View Alert History
+                    </.dropdown_item>
+                    <.dropdown_divider />
+                    <form action={"/admin/shellies/#{shelly.id}"} method="post">
+                      <input type="hidden" name="_method" value="delete" />
+                      <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                      <.dropdown_item danger onclick="return confirm('Delete this shelly?')">
+                        Delete
+                      </.dropdown_item>
+                    </form>
+                  </.dropdown>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <.pagination
+        page={@page}
+        total_pages={@total_pages}
+        base_path={@base_path}
+        total_count={@total_count}
+        per_page={@per_page}
+      />
+    <% end %>
+  </div>
+</div>

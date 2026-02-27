@@ -44,6 +44,7 @@ defmodule ComnetWebsocketWeb.Router do
     delete "/users/:id/shellies/:shelly_id", UserController, :remove_shelly
 
     get "/shellies", ShellyController, :index
+    get "/shellies/create", ShellyController, :new
     post "/shellies", ShellyController, :create
     get "/shellies/:id/edit", ShellyController, :edit
     patch "/shellies/:id", ShellyController, :update

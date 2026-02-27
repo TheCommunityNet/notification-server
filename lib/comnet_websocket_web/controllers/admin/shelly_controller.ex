@@ -10,9 +10,17 @@ defmodule ComnetWebsocketWeb.Admin.ShellyController do
   @per_page 25
 
   def index(conn, params) do
+    filters = Map.take(params, ["search"])
     page = parse_page(params)
-    shellies = ShellyService.list_shellies(page: page, per_page: @per_page)
-    total_count = ShellyService.count_shellies()
+
+    shellies =
+      ShellyService.list_shellies(
+        page: page,
+        per_page: @per_page,
+        filters: filters
+      )
+
+    total_count = ShellyService.count_shellies(filters: filters)
     total_pages = total_pages(total_count, @per_page)
     base_path = pagination_base_path("/admin/shellies", params)
 
@@ -23,8 +31,13 @@ defmodule ComnetWebsocketWeb.Admin.ShellyController do
       page: page,
       total_pages: total_pages,
       per_page: @per_page,
-      base_path: base_path
+      base_path: base_path,
+      filters: filters
     )
+  end
+
+  def new(conn, _params) do
+    render(conn, :create, page_title: "Register Shelly")
   end
 
   def create(conn, %{"shelly" => shelly_params}) do
@@ -37,7 +50,7 @@ defmodule ComnetWebsocketWeb.Admin.ShellyController do
       {:error, _changeset} ->
         conn
         |> put_flash(:error, "Failed to register shelly. Please check the inputs.")
-        |> redirect(to: ~p"/admin/shellies")
+        |> redirect(to: ~p"/admin/shellies/create")
     end
   end
 

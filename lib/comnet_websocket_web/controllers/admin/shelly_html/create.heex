@@ -1,0 +1,27 @@
+<div class="max-w-lg">
+  <div class="mb-6">
+    <a href="/admin/shellies" class="text-sm text-indigo-600 hover:underline">
+      &larr; Back to Shellies
+    </a>
+  </div>
+  <form action="/admin/shellies" method="post">
+    <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+    <.card title="Register New Shelly">
+      <div class="space-y-4">
+        <.input label="Name" name="shelly[name]" required placeholder="e.g. Living Room Switch" />
+        <.input
+          label="IP Address"
+          name="shelly[ip_address]"
+          required
+          placeholder="e.g. 192.168.1.100"
+        />
+      </div>
+
+      <:footer>
+        <div class="ml-auto">
+          <.button color="emerald">Register Shelly</.button>
+        </div>
+      </:footer>
+    </.card>
+  </form>
+</div>
