@@ -39,6 +39,7 @@ defmodule ComnetWebsocketWeb.Router do
     patch "/users/:id", UserController, :update
     delete "/users/:id", UserController, :delete
     post "/users/:id/generate_otp", UserController, :generate_otp
+    post "/users/:id/clear_otp", UserController, :clear_otp
     post "/users/:id/regenerate_token", UserController, :regenerate_token
     post "/users/:id/shellies", UserController, :assign_shelly
     delete "/users/:id/shellies/:shelly_id", UserController, :remove_shelly

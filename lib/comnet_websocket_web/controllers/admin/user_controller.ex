@@ -62,19 +62,19 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
   def generate_otp(conn, %{"id" => id}) do
     case UserService.get_user(id) do
       nil ->
-        conn |> put_flash(:error, "User not found.") |> redirect(to: ~p"/admin/users")
+        conn |> put_flash(:error, "User not found.") |> redirect_back(~p"/admin/users")
 
       user ->
         case UserService.generate_otp_token(user) do
           {:ok, _} ->
             conn
             |> put_flash(:info, "OTP token generated for #{user.name}.")
-            |> redirect(to: ~p"/admin/users")
+            |> redirect_back(~p"/admin/users")
 
           {:error, _} ->
             conn
             |> put_flash(:error, "Failed to generate OTP token.")
-            |> redirect(to: ~p"/admin/users")
+            |> redirect_back(~p"/admin/users")
         end
     end
   end
@@ -82,19 +82,39 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
   def regenerate_token(conn, %{"id" => id}) do
     case UserService.get_user(id) do
       nil ->
-        conn |> put_flash(:error, "User not found.") |> redirect(to: ~p"/admin/users")
+        conn |> put_flash(:error, "User not found.") |> redirect_back(~p"/admin/users")
 
       user ->
         case UserService.regenerate_access_token(user) do
           {:ok, _} ->
             conn
             |> put_flash(:info, "Access token regenerated for #{user.name}.")
-            |> redirect(to: ~p"/admin/users")
+            |> redirect_back(~p"/admin/users")
 
           {:error, _} ->
             conn
             |> put_flash(:error, "Failed to regenerate access token.")
-            |> redirect(to: ~p"/admin/users")
+            |> redirect_back(~p"/admin/users")
+        end
+    end
+  end
+
+  def clear_otp(conn, %{"id" => id}) do
+    case UserService.get_user(id) do
+      nil ->
+        conn |> put_flash(:error, "User not found.") |> redirect_back(~p"/admin/users")
+
+      user ->
+        case UserService.clear_otp_token(user) do
+          {:ok, _} ->
+            conn
+            |> put_flash(:info, "OTP token cleared for #{user.name}.")
+            |> redirect_back(~p"/admin/users")
+
+          {:error, _} ->
+            conn
+            |> put_flash(:error, "Failed to clear OTP token.")
+            |> redirect_back(~p"/admin/users")
         end
     end
   end
@@ -206,6 +226,19 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
             |> put_flash(:error, "Failed to remove shelly.")
             |> redirect(to: ~p"/admin/users/#{user_id}/edit")
         end
+    end
+  end
+
+  defp redirect_back(conn, fallback) do
+    referer = get_req_header(conn, "referer") |> List.first()
+
+    with referer when is_binary(referer) <- referer,
+         %URI{host: host, path: path} <- URI.parse(referer),
+         true <- is_nil(host) or host == conn.host,
+         true <- is_binary(path) and byte_size(path) > 0 do
+      redirect(conn, to: path)
+    else
+      _ -> redirect(conn, to: fallback)
     end
   end
 end

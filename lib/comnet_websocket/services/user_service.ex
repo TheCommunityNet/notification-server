@@ -133,6 +133,13 @@ defmodule ComnetWebsocket.Services.UserService do
     end
   end
 
+  @spec clear_otp_token(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def clear_otp_token(user) do
+    user
+    |> Ecto.Changeset.change(otp_token: nil)
+    |> Repo.update()
+  end
+
   defp otp_token_unique_error?(errors) do
     case Keyword.get(errors, :otp_token) do
       {_, opts} when is_list(opts) -> Keyword.get(opts, :constraint) == :unique

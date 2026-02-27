@@ -61,6 +61,15 @@
                   <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
                   <.button color="indigo-soft" size="sm" type="submit">Generate</.button>
                 </form>
+                <form
+                  :if={@user.otp_token}
+                  action={"/admin/users/#{@user.id}/clear_otp"}
+                  method="post"
+                  class="inline"
+                >
+                  <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                  <.button color="red-soft" size="sm" type="submit">Clear</.button>
+                </form>
               </div>
             </dd>
           </div>
