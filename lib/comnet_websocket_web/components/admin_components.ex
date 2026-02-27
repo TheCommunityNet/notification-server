@@ -109,6 +109,84 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   end
 
   @doc """
+  Renders a custom-styled checkbox with an optional label (slot content).
+
+  The native checkbox is visually hidden; a styled box with checkmark is shown instead.
+  Use the inner block for the label text (e.g. item name and secondary info).
+
+  ## Examples
+
+      <.checkbox name="user[shelly_ids][]" value={s.id} checked={assigned?}>
+        <span class="text-sm text-gray-700">{s.name}</span>
+        <span class="text-xs text-gray-400">({s.ip_address})</span>
+      </.checkbox>
+  """
+  attr :name, :string, required: true
+  attr :value, :any, required: true
+  attr :checked, :boolean, default: false
+  attr :id, :string, default: nil
+  attr :class, :string, default: nil
+  attr :rest, :global
+  slot :inner_block, required: true
+
+  def checkbox(assigns) do
+    assigns =
+      assign(assigns, :input_id, assigns[:id] || "checkbox-#{System.unique_integer([:positive])}")
+
+    ~H"""
+    <label
+      for={@input_id}
+      class={[
+        "flex items-center gap-3 cursor-pointer rounded-lg py-2.5 px-3 -mx-1 transition-colors",
+        "hover:bg-gray-50 focus-within:bg-gray-50",
+        @class
+      ]}
+    >
+      <span class="relative flex size-4 flex-shrink-0 items-center justify-center">
+        <input
+          type="checkbox"
+          id={@input_id}
+          name={@name}
+          value={@value}
+          checked={@checked}
+          class="sr-only peer"
+          {@rest}
+        />
+        <span
+          class={[
+            "absolute inset-0 rounded border-1 transition-colors",
+            "border-gray-300 bg-white peer-checked:border-indigo-600 peer-checked:bg-indigo-600",
+            "peer-focus:ring-2 peer-focus:ring-indigo-500 peer-focus:ring-offset-1"
+          ]}
+          aria-hidden="true"
+        >
+        </span>
+        <span
+          class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity peer-checked:opacity-100 pointer-events-none"
+          aria-hidden="true"
+        >
+          <svg
+            class="h-3 w-3 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="2 6 5 9 10 3" />
+          </svg>
+        </span>
+      </span>
+      <span class="flex flex-wrap items-baseline gap-x-1.5 min-w-0">
+        {render_slot(@inner_block)}
+      </span>
+    </label>
+    """
+  end
+
+  @doc """
   Renders a button with color and size variants.
 
   ## Examples
