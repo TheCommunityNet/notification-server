@@ -33,7 +33,8 @@ defmodule ComnetWebsocketWeb.Router do
     get "/", DashboardController, :index
 
     get "/users", UserController, :index
-    post "/users", UserController, :create
+    get "/users/create", UserController, :create
+    post "/users", UserController, :store
     get "/users/:id/edit", UserController, :edit
     patch "/users/:id", UserController, :update
     delete "/users/:id", UserController, :delete

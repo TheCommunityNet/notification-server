@@ -10,10 +10,14 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
   @per_page 20
 
   def index(conn, params) do
+    filters = Map.take(params, ["search", "shelly_id"])
     page = parse_page(params)
-    users = UserService.list_users_with_shellies(page: page, per_page: @per_page)
+
+    users =
+      UserService.list_users_with_shellies(page: page, per_page: @per_page, filters: filters)
+
     all_shellies = ShellyService.list_shellies()
-    total_count = UserService.count_users()
+    total_count = UserService.count_users(filters)
     total_pages = total_pages(total_count, @per_page)
     base_path = pagination_base_path("/admin/users", params)
 
@@ -25,21 +29,33 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
       page: page,
       total_pages: total_pages,
       per_page: @per_page,
-      base_path: base_path
+      base_path: base_path,
+      filters: filters
     )
   end
 
-  def create(conn, %{"user" => user_params}) do
+  def create(conn, _params) do
+    all_shellies = ShellyService.list_shellies()
+    render(conn, :create, page_title: "Create User", all_shellies: all_shellies)
+  end
+
+  def store(conn, %{"user" => user_params}) do
+    shelly_ids = Map.get(user_params, "shelly_ids", [])
+
     case UserService.create_user(user_params) do
-      {:ok, _user} ->
+      {:ok, user} ->
+        Enum.each(shelly_ids, &UserService.assign_shelly(user, &1))
+
         conn
         |> put_flash(:info, "User created successfully.")
         |> redirect(to: ~p"/admin/users")
 
       {:error, _changeset} ->
+        all_shellies = ShellyService.list_shellies()
+
         conn
         |> put_flash(:error, "Failed to create user. Please check the inputs.")
-        |> redirect(to: ~p"/admin/users")
+        |> render(:new, page_title: "Create User", all_shellies: all_shellies)
     end
   end
 
@@ -84,17 +100,18 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
   end
 
   def edit(conn, %{"id" => id}) do
-    case UserService.get_user(id) do
+    case UserService.get_user_with_shellies(id) do
       nil ->
         conn |> put_flash(:error, "User not found.") |> redirect(to: ~p"/admin/users")
 
       user ->
-        render(conn, :edit, page_title: "Edit User", user: user)
+        all_shellies = ShellyService.list_shellies()
+        render(conn, :edit, page_title: "Edit User", user: user, all_shellies: all_shellies)
     end
   end
 
   def update(conn, %{"id" => id, "user" => user_params}) do
-    case UserService.get_user(id) do
+    case UserService.get_user_with_shellies(id) do
       nil ->
         conn |> put_flash(:error, "User not found.") |> redirect(to: ~p"/admin/users")
 
@@ -103,10 +120,14 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
           {:ok, _} ->
             conn
             |> put_flash(:info, "User updated successfully.")
-            |> redirect(to: ~p"/admin/users")
+            |> redirect(to: ~p"/admin/users/#{id}/edit")
 
-          {:error, changeset} ->
-            render(conn, :edit, page_title: "Edit User", user: user, changeset: changeset)
+          {:error, _changeset} ->
+            all_shellies = ShellyService.list_shellies()
+
+            conn
+            |> put_flash(:error, "Failed to update user.")
+            |> render(:edit, page_title: "Edit User", user: user, all_shellies: all_shellies)
         end
     end
   end
@@ -141,12 +162,12 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
           {:ok, _} ->
             conn
             |> put_flash(:info, "Shelly assigned to #{user.name}.")
-            |> redirect(to: ~p"/admin/users")
+            |> redirect(to: ~p"/admin/users/#{user_id}/edit")
 
           _ ->
             conn
             |> put_flash(:error, "Failed to assign shelly.")
-            |> redirect(to: ~p"/admin/users")
+            |> redirect(to: ~p"/admin/users/#{user_id}/edit")
         end
     end
   end
@@ -161,12 +182,12 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
           {:ok, _} ->
             conn
             |> put_flash(:info, "Shelly removed from #{user.name}.")
-            |> redirect(to: ~p"/admin/users")
+            |> redirect(to: ~p"/admin/users/#{user_id}/edit")
 
           {:error, _} ->
             conn
             |> put_flash(:error, "Failed to remove shelly.")
-            |> redirect(to: ~p"/admin/users")
+            |> redirect(to: ~p"/admin/users/#{user_id}/edit")
         end
     end
   end

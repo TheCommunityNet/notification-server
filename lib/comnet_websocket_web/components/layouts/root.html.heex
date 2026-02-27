@@ -21,9 +21,10 @@
         import("<%= Path.join([@conn.script_name, ~p"/assets/js/css-anchor-positioning.js"]) %>");
       }
     </script>
-    <script phx-track-static type="module" src={~p"/assets/js/popover.min.js"}></script>
+    <script phx-track-static type="module" src={~p"/assets/js/popover.min.js"}>
+    </script>
   </head>
   <body class="h-full bg-gray-50 antialiased">
-    <%= @inner_content %>
+    {@inner_content}
   </body>
 </html>

@@ -16,7 +16,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   def label(assigns) do
     ~H"""
     <label class={["block text-xs font-medium text-gray-700 mb-1", @class]}>
-      <%= render_slot(@inner_block) %><span :if={@required} class="text-red-500 ml-0.5">*</span>
+      {render_slot(@inner_block)}<span :if={@required} class="text-red-500 ml-0.5">*</span>
     </label>
     """
   end
@@ -47,7 +47,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div>
-      <.label :if={@label} required={@required}><%= @label %></.label>
+      <.label :if={@label} required={@required}>{@label}</.label>
       <select
         name={@name}
         class={[
@@ -58,7 +58,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
         {@rest}
       >
         <option :for={{opt_label, val} <- @options} value={val} selected={@value == val}>
-          <%= opt_label %>
+          {opt_label}
         </option>
       </select>
     </div>
@@ -68,7 +68,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   def input(%{type: "textarea"} = assigns) do
     ~H"""
     <div>
-      <.label :if={@label} required={@required}><%= @label %></.label>
+      <.label :if={@label} required={@required}>{@label}</.label>
       <textarea
         name={@name}
         rows={@rows}
@@ -88,7 +88,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   def input(assigns) do
     ~H"""
     <div>
-      <.label :if={@label} required={@required}><%= @label %></.label>
+      <.label :if={@label} required={@required}>{@label}</.label>
       <input
         type={@type}
         name={@name}
@@ -132,7 +132,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
       class={[button_base_class(@size), button_color_class(@color), @class]}
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </button>
     """
   end
@@ -176,7 +176,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
       badge_color_class(@color),
       @class
     ]}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </span>
     """
   end
@@ -201,15 +201,19 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   attr :title, :string, default: nil
   attr :class, :string, default: nil
   slot :inner_block, required: true
+  slot :footer
 
   def card(assigns) do
     ~H"""
     <div class={["bg-white rounded-xl shadow-sm border border-gray-200", @class]}>
       <div :if={@title} class="px-6 py-4 border-b border-gray-100">
-        <h3 class="text-base font-semibold text-gray-900"><%= @title %></h3>
+        <h3 class="text-base font-semibold text-gray-900">{@title}</h3>
       </div>
       <div class="p-6">
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
+      </div>
+      <div :if={@footer != []} class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-xl flex flex-wrap gap-3 items-center">
+        {render_slot(@footer)}
       </div>
     </div>
     """
@@ -241,7 +245,8 @@ defmodule ComnetWebsocketWeb.AdminComponents do
       popovertarget={@id}
       style="anchor-name: --{@id};"
       class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium
-             text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer select-none">
+             text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer select-none"
+    >
       Actions
       <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -251,8 +256,9 @@ defmodule ComnetWebsocketWeb.AdminComponents do
       id={@id}
       popover
       class="bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-44 text-sm absolute inset-auto m-0 mt-1.5 popover"
-      style="position-anchor: --{@id};">
-      <%= render_slot(@inner_block) %>
+      style="position-anchor: --{@id};"
+    >
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -268,26 +274,30 @@ defmodule ComnetWebsocketWeb.AdminComponents do
 
   def dropdown_item(%{href: href} = assigns) when not is_nil(href) do
     ~H"""
-    <a href={@href}
-       class={[
-         "flex w-full items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors",
-         if(@danger, do: "text-red-600", else: "text-gray-700")
-       ]}
-       {@rest}>
-      <%= render_slot(@inner_block) %>
+    <a
+      href={@href}
+      class={[
+        "flex w-full items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors",
+        if(@danger, do: "text-red-600", else: "text-gray-700")
+      ]}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
     </a>
     """
   end
 
   def dropdown_item(assigns) do
     ~H"""
-    <button type="submit"
-            class={[
-              "flex w-full items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors text-left",
-              if(@danger, do: "text-red-600", else: "text-gray-700")
-            ]}
-            {@rest}>
-      <%= render_slot(@inner_block) %>
+    <button
+      type="submit"
+      class={[
+        "flex w-full items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors text-left",
+        if(@danger, do: "text-red-600", else: "text-gray-700")
+      ]}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
     </button>
     """
   end
@@ -315,19 +325,23 @@ defmodule ComnetWebsocketWeb.AdminComponents do
     ~H"""
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div class="flex items-center justify-between mb-2">
-        <p class="text-sm font-medium text-gray-500"><%= @label %></p>
+        <p class="text-sm font-medium text-gray-500">{@label}</p>
         <div class={["w-9 h-9 rounded-lg flex items-center justify-center", stat_bg_class(@color)]}>
           <span class={stat_icon_class(@color)}>
-            <%= render_slot(@icon) %>
+            {render_slot(@icon)}
           </span>
         </div>
       </div>
-      <p class="text-3xl font-bold text-gray-900"><%= @value %></p>
-      <a :if={@href} href={@href} class={["text-xs hover:underline mt-1 inline-block", stat_link_class(@color)]}>
-        <%= @link_label %> →
+      <p class="text-3xl font-bold text-gray-900">{@value}</p>
+      <a
+        :if={@href}
+        href={@href}
+        class={["text-xs hover:underline mt-1 inline-block", stat_link_class(@color)]}
+      >
+        {@link_label} →
       </a>
       <p :if={!@href && @link_label} class={["text-xs mt-1", stat_link_class(@color)]}>
-        <%= @link_label %>
+        {@link_label}
       </p>
     </div>
     """
@@ -384,17 +398,19 @@ defmodule ComnetWebsocketWeb.AdminComponents do
       <p class="text-xs text-gray-500 order-2 sm:order-1">
         Showing
         <span class="font-medium text-gray-700">
-          <%= min((@page - 1) * @per_page + 1, @total_count) %>–<%= min(@page * @per_page, @total_count) %>
+          {min((@page - 1) * @per_page + 1, @total_count)}–{min(@page * @per_page, @total_count)}
         </span>
-        of <span class="font-medium text-gray-700"><%= @total_count %></span>
+        of <span class="font-medium text-gray-700">{@total_count}</span>
       </p>
 
       <nav class="flex items-center gap-1 order-1 sm:order-2" aria-label="Pagination">
         <%!-- Previous --%>
         <%= if @page > 1 do %>
-          <a href={page_href(@base_path, @page - 1)}
-             class="px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200
-                    hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+          <a
+            href={page_href(@base_path, @page - 1)}
+            class="px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200
+                    hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors"
+          >
             ← Prev
           </a>
         <% else %>
@@ -409,24 +425,29 @@ defmodule ComnetWebsocketWeb.AdminComponents do
           <%= if item == nil do %>
             <span class="px-2 py-1.5 text-xs text-gray-400 select-none">…</span>
           <% else %>
-            <a href={page_href(@base_path, item)}
-               class={[
-                 "min-w-[2rem] px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors text-center",
-                 if(item == @page,
-                   do: "bg-indigo-600 text-white border border-indigo-600",
-                   else: "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900"
-                 )
-               ]}>
-              <%= item %>
+            <a
+              href={page_href(@base_path, item)}
+              class={[
+                "min-w-[2rem] px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors text-center",
+                if(item == @page,
+                  do: "bg-indigo-600 text-white border border-indigo-600",
+                  else:
+                    "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900"
+                )
+              ]}
+            >
+              {item}
             </a>
           <% end %>
         <% end %>
 
         <%!-- Next --%>
         <%= if @page < @total_pages do %>
-          <a href={page_href(@base_path, @page + 1)}
-             class="px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200
-                    hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+          <a
+            href={page_href(@base_path, @page + 1)}
+            class="px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200
+                    hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors"
+          >
             Next →
           </a>
         <% else %>

@@ -1,76 +1,123 @@
 <div class="min-h-screen flex">
   <%!-- Mobile overlay backdrop --%>
-  <div id="sidebar-overlay"
-       class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"
-       onclick="closeSidebar()">
+  <div
+    id="sidebar-overlay"
+    class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"
+    onclick="closeSidebar()"
+  >
   </div>
 
   <%!-- Sidebar --%>
-  <aside id="sidebar"
-         class="fixed md:static inset-y-0 left-0 z-50 w-64
+  <aside
+    id="sidebar"
+    class="fixed md:static inset-y-0 left-0 z-50 w-64
                 -translate-x-full md:translate-x-0
                 transition-transform duration-200 ease-in-out
-                bg-indigo-900 text-white flex flex-col flex-shrink-0">
+                bg-indigo-900 text-white flex flex-col flex-shrink-0"
+  >
     <div class="px-6 py-5 border-b border-indigo-800 flex items-center justify-between">
       <div>
         <h1 class="text-lg font-bold tracking-tight">Comnet Admin</h1>
         <p class="text-indigo-300 text-xs mt-0.5">Management Dashboard</p>
       </div>
       <%!-- Close button (mobile only) --%>
-      <button onclick="closeSidebar()"
-              class="md:hidden p-1 rounded text-indigo-300 hover:text-white hover:bg-indigo-800">
+      <button
+        onclick="closeSidebar()"
+        class="md:hidden p-1 rounded text-indigo-300 hover:text-white hover:bg-indigo-800"
+      >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
     </div>
 
     <nav class="flex-1 px-3 py-4 space-y-1">
-      <a href="/admin"
-         class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors">
+      <a
+        href="/admin"
+        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors"
+      >
         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          />
         </svg>
         Dashboard
       </a>
-      <a href="/admin/users"
-         class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors">
+      <a
+        href="/admin/users"
+        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors"
+      >
         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+          />
         </svg>
         Users
       </a>
-      <a href="/admin/shellies"
-         class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors">
+      <a
+        href="/admin/shellies"
+        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors"
+      >
         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"
+          />
         </svg>
         Shellies
       </a>
-        <a href="/admin/devices"
-         class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors">
+      <a
+        href="/admin/devices"
+        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors"
+      >
         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+          />
         </svg>
         Devices
       </a>
-      <a href="/admin/notifications"
-         class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors">
+      <a
+        href="/admin/notifications"
+        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors"
+      >
         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+          />
         </svg>
         Notifications
       </a>
-      <a href="/admin/alerts"
-         class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors">
+      <a
+        href="/admin/alerts"
+        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-indigo-100 hover:bg-indigo-800 hover:text-white transition-colors"
+      >
         <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M13 10V3L4 14h7v7l9-11h-7z" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 10V3L4 14h7v7l9-11h-7z"
+          />
         </svg>
         Alert History
       </a>
@@ -86,14 +133,21 @@
     <header class="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex-shrink-0">
       <div class="flex items-center gap-4">
         <%!-- Hamburger (mobile only) --%>
-        <button onclick="openSidebar()"
-                class="md:hidden p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+        <button
+          onclick="openSidebar()"
+          class="md:hidden p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+        >
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
           </svg>
         </button>
         <h2 class="text-xl font-semibold text-gray-900 truncate">
-          <%= assigns[:page_title] || "Admin" %>
+          {assigns[:page_title] || "Admin"}
         </h2>
       </div>
     </header>
@@ -102,21 +156,29 @@
       <%= if info = Phoenix.Flash.get(@flash, :info) do %>
         <div class="mb-4 flex items-center gap-3 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
           <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clip-rule="evenodd"
+            />
           </svg>
-          <%= info %>
+          {info}
         </div>
       <% end %>
       <%= if error = Phoenix.Flash.get(@flash, :error) do %>
         <div class="mb-4 flex items-center gap-3 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
           <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-5a1 1 0 112 0v-2a1 1 0 11-2 0v2zm1-8a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-5a1 1 0 112 0v-2a1 1 0 11-2 0v2zm1-8a1 1 0 100 2 1 1 0 000-2z"
+              clip-rule="evenodd"
+            />
           </svg>
-          <%= error %>
+          {error}
         </div>
       <% end %>
 
-      <%= @inner_content %>
+      {@inner_content}
     </main>
   </div>
 </div>

@@ -1,0 +1,161 @@
+<div class="max-w-2xl">
+  <div class="mb-6">
+    <a href="/admin/users" class="text-sm text-indigo-600 hover:underline">
+      &larr; Back to Users
+    </a>
+  </div>
+
+  <div class="space-y-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-base font-semibold text-gray-900">User: {@user.name}</h3>
+      </div>
+
+      <div class="p-6 space-y-6">
+        <%!-- Editable name --%>
+        <form
+          action={"/admin/users/#{@user.id}"}
+          method="post"
+          class="space-y-4"
+          id="edit-form"
+        >
+          <input type="hidden" name="_method" value="patch" />
+          <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+          <.input label="Name" name="user[name]" required value={@user.name} />
+        </form>
+        <hr class="border-gray-100" />
+
+        <%!-- Read-only fields --%>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+          <div>
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Device ID</dt>
+            <dd class="mt-1 font-mono text-gray-900">{@user.device_id || "—"}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">OTP Token</dt>
+            <dd class="mt-1">
+              <div class="flex items-center gap-2 flex-wrap bg-gray-100 text-gray-700 px-3 py-2 rounded-lg">
+                <%= if @user.otp_token do %>
+                  <span class="font-mono text-xs break-all flex-1 min-w-0">
+                    {@user.otp_token}
+                  </span>
+                <% else %>
+                  <span class="text-gray-400">not generated</span>
+                <% end %>
+                <form
+                  action={"/admin/users/#{@user.id}/generate_otp"}
+                  method="post"
+                  class="inline ml-auto"
+                >
+                  <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                  <.button color="indigo-soft" size="sm" type="submit">Generate</.button>
+                </form>
+              </div>
+            </dd>
+          </div>
+          <div class="sm:col-span-2">
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Access Token
+            </dt>
+            <dd class="mt-1">
+              <div class="flex items-center gap-2 flex-wrap bg-gray-100 text-gray-700 px-3 py-2 rounded-lg">
+                <span class="font-mono text-xs break-all flex-1 min-w-0">
+                  {@user.access_token}
+                </span>
+                <form
+                  action={"/admin/users/#{@user.id}/regenerate_token"}
+                  method="post"
+                  class="inline flex-shrink-0"
+                >
+                  <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                  <.button color="indigo-soft" size="sm" type="submit">Regenerate</.button>
+                </form>
+              </div>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Created</dt>
+            <dd class="mt-1 text-gray-700">
+              {Calendar.strftime(@user.inserted_at, "%Y-%m-%d %H:%M")}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Updated</dt>
+            <dd class="mt-1 text-gray-700">
+              {Calendar.strftime(@user.updated_at, "%Y-%m-%d %H:%M")}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <%!-- Card footer: actions --%>
+      <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-xl flex flex-wrap gap-3 items-center">
+        <form action={"/admin/users/#{@user.id}"} method="post">
+          <input type="hidden" name="_method" value="delete" />
+          <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+          <.button
+            color="red-soft"
+            size="sm"
+            type="submit"
+            onclick={"return confirm('Delete user #{@user.name}?')"}
+          >
+            Delete User
+          </.button>
+        </form>
+
+        <div class="ml-auto">
+          <.button form="edit-form">Save Changes</.button>
+        </div>
+      </div>
+    </div>
+
+    <%!-- Shellies management --%>
+    <.card title="Assigned Shellies">
+      <%= if @user.shellies != [] do %>
+        <div class="space-y-2 mb-4">
+          <%= for shelly <- @user.shellies do %>
+            <div class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg">
+              <div>
+                <span class="text-sm font-medium text-gray-900">{shelly.name}</span>
+                <span class="text-xs text-gray-400 ml-2">{shelly.ip_address}</span>
+              </div>
+              <form action={"/admin/users/#{@user.id}/shellies/#{shelly.id}"} method="post">
+                <input type="hidden" name="_method" value="delete" />
+                <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                <button
+                  type="submit"
+                  class="text-xs text-red-600 hover:text-red-800 font-medium transition-colors"
+                  onclick={"return confirm('Remove #{shelly.name}?')"}
+                >
+                  Remove
+                </button>
+              </form>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm text-gray-400 mb-4">No shellies assigned yet.</p>
+      <% end %>
+
+      <% available = unassigned_shellies(@user, @all_shellies) %>
+      <%= if available != [] do %>
+        <form
+          action={"/admin/users/#{@user.id}/shellies"}
+          method="post"
+          class="flex gap-2 items-end"
+        >
+          <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+          <div class="flex-1">
+            <.input
+              type="select"
+              label="Add Shelly"
+              name="shelly_id"
+              options={Enum.map(available, &{&1.name, &1.id})}
+            />
+          </div>
+          <.button color="emerald" size="sm">Assign</.button>
+        </form>
+      <% end %>
+    </.card>
+  </div>
+</div>

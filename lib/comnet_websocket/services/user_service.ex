@@ -14,8 +14,10 @@ defmodule ComnetWebsocket.Services.UserService do
     page = max(1, Keyword.get(opts, :page, 1))
     per_page = Keyword.get(opts, :per_page, 20)
     offset = (page - 1) * per_page
+    filters = Keyword.get(opts, :filters, %{})
 
     User
+    |> apply_user_filters(filters)
     |> order_by([u], desc: u.inserted_at)
     |> limit(^per_page)
     |> offset(^offset)
@@ -26,6 +28,13 @@ defmodule ComnetWebsocket.Services.UserService do
   @spec get_user(String.t()) :: User.t() | nil
   def get_user(id) do
     Repo.get(User, id)
+  end
+
+  @spec get_user_with_shellies(String.t()) :: User.t() | nil
+  def get_user_with_shellies(id) do
+    User
+    |> Repo.get(id)
+    |> Repo.preload(:shellies)
   end
 
   @spec assign_shelly(User.t(), String.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
@@ -130,8 +139,36 @@ defmodule ComnetWebsocket.Services.UserService do
     Repo.delete(user)
   end
 
-  @spec count_users() :: integer()
-  def count_users do
-    Repo.aggregate(User, :count)
+  @spec count_users(map()) :: integer()
+  def count_users(filters \\ %{}) do
+    User
+    |> apply_user_filters(filters)
+    |> Repo.aggregate(:count)
+  end
+
+  defp apply_user_filters(query, filters) do
+    query
+    |> maybe_filter_search(filters["search"])
+    |> maybe_filter_shelly(filters["shelly_id"])
+  end
+
+  defp maybe_filter_search(query, nil), do: query
+  defp maybe_filter_search(query, ""), do: query
+
+  defp maybe_filter_search(query, term) do
+    pattern = "%#{term}%"
+
+    from u in query,
+      where: ilike(u.name, ^pattern) or ilike(u.device_id, ^pattern)
+  end
+
+  defp maybe_filter_shelly(query, nil), do: query
+  defp maybe_filter_shelly(query, ""), do: query
+
+  defp maybe_filter_shelly(query, shelly_id) do
+    from u in query,
+      join: us in "user_shellies",
+      on: us.user_id == u.id,
+      where: us.shelly_id == ^shelly_id
   end
 end

@@ -5,20 +5,29 @@ defmodule ComnetWebsocketWeb.Admin.ShellyHTML do
     ~H"""
     <div class="max-w-lg">
       <div class="mb-6">
-        <a href="/admin/shellies" class="text-sm text-indigo-600 hover:underline">← Back to Shellies</a>
+        <a href="/admin/shellies" class="text-sm text-indigo-600 hover:underline">
+          ← Back to Shellies
+        </a>
       </div>
       <.card title={"Edit Shelly: #{@shelly.name}"}>
         <form action={"/admin/shellies/#{@shelly.id}"} method="post" class="space-y-4">
           <input type="hidden" name="_method" value="patch" />
           <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
           <.input label="Name" name="shelly[name]" required value={@shelly.name} />
-          <.input label="IP Address" name="shelly[ip_address]" required value={@shelly.ip_address}
-                  placeholder="e.g. 192.168.1.100" />
+          <.input
+            label="IP Address"
+            name="shelly[ip_address]"
+            required
+            value={@shelly.ip_address}
+            placeholder="e.g. 192.168.1.100"
+          />
           <div class="flex gap-3 pt-2">
             <.button color="emerald">Save Changes</.button>
-            <a href="/admin/shellies"
-               class="inline-flex items-center px-5 py-2 text-sm font-medium text-gray-600
-                      bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+            <a
+              href="/admin/shellies"
+              class="inline-flex items-center px-5 py-2 text-sm font-medium text-gray-600
+                      bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            >
               Cancel
             </a>
           </div>
@@ -38,7 +47,12 @@ defmodule ComnetWebsocketWeb.Admin.ShellyHTML do
             <.input label="Name" name="shelly[name]" required placeholder="e.g. Living Room Switch" />
           </div>
           <div class="flex-1 min-w-48">
-            <.input label="IP Address" name="shelly[ip_address]" required placeholder="e.g. 192.168.1.100" />
+            <.input
+              label="IP Address"
+              name="shelly[ip_address]"
+              required
+              placeholder="e.g. 192.168.1.100"
+            />
           </div>
           <.button color="emerald">Register Shelly</.button>
         </form>
@@ -47,7 +61,7 @@ defmodule ComnetWebsocketWeb.Admin.ShellyHTML do
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h3 class="text-base font-semibold text-gray-900">Registered Shellies</h3>
-          <span class="text-xs text-gray-400"><%= @total_count %> total</span>
+          <span class="text-xs text-gray-400">{@total_count} total</span>
         </div>
 
         <%= if @shellies == [] do %>
@@ -68,12 +82,12 @@ defmodule ComnetWebsocketWeb.Admin.ShellyHTML do
               <tbody class="divide-y divide-gray-100">
                 <%= for shelly <- @shellies do %>
                   <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 font-medium text-gray-900"><%= shelly.name %></td>
+                    <td class="px-6 py-4 font-medium text-gray-900">{shelly.name}</td>
                     <td class="px-6 py-4">
-                      <.badge><%= shelly.ip_address %></.badge>
+                      <.badge>{shelly.ip_address}</.badge>
                     </td>
                     <td class="px-6 py-4 text-xs text-gray-400">
-                      <%= Calendar.strftime(shelly.inserted_at, "%Y-%m-%d %H:%M") %>
+                      {Calendar.strftime(shelly.inserted_at, "%Y-%m-%d %H:%M")}
                     </td>
                     <td class="px-6 py-4 text-right">
                       <.dropdown id={"shelly-actions-#{shelly.id}"}>
@@ -98,8 +112,13 @@ defmodule ComnetWebsocketWeb.Admin.ShellyHTML do
               </tbody>
             </table>
           </div>
-          <.pagination page={@page} total_pages={@total_pages} base_path={@base_path}
-                       total_count={@total_count} per_page={@per_page} />
+          <.pagination
+            page={@page}
+            total_pages={@total_pages}
+            base_path={@base_path}
+            total_count={@total_count}
+            per_page={@per_page}
+          />
         <% end %>
       </div>
     </div>

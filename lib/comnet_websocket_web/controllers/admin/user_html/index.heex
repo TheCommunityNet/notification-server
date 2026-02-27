@@ -1,0 +1,143 @@
+<div class="space-y-6">
+  <.card>
+    <form action="/admin/users" method="get" class="flex flex-wrap gap-4 items-end">
+      <div class="flex-1 min-w-48">
+        <.input
+          label="Search by name or device ID"
+          name="search"
+          value={@filters["search"]}
+          placeholder="e.g. John or device-abc..."
+        />
+      </div>
+      <div class="w-48">
+        <.input
+          type="select"
+          label="Filter by Shelly"
+          name="shelly_id"
+          value={@filters["shelly_id"]}
+          options={[{"All Shellies", ""} | Enum.map(@all_shellies, &{&1.name, &1.id})]}
+        />
+      </div>
+      <.button type="submit">Filter</.button>
+      <a
+        :if={@filters != %{"search" => "", "shelly_id" => ""} and @filters != %{}}
+        href="/admin/users"
+        class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600
+                    hover:text-gray-900 transition-colors"
+      >
+        Clear
+      </a>
+      <a href="/admin/users/create" class="ml-auto">
+        <.button color="emerald" type="button">+ Create User</.button>
+      </a>
+    </form>
+  </.card>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h3 class="text-base font-semibold text-gray-900">All Users</h3>
+      <span class="text-xs text-gray-400">{@total_count} total</span>
+    </div>
+
+    <%= if @users == [] do %>
+      <div class="px-6 py-12 text-center text-sm text-gray-400">
+        No users found.
+      </div>
+    <% else %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+            <tr>
+              <th class="px-6 py-3 text-left">Name</th>
+              <th class="px-6 py-3 text-left">Device ID</th>
+              <th class="px-6 py-3 text-left">OTP Token</th>
+              <th class="px-6 py-3 text-left">Access Token</th>
+              <th class="px-6 py-3 text-left">Shellies</th>
+              <th class="px-6 py-3 text-left">Created</th>
+              <th class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <%= for user <- @users do %>
+              <tr class="hover:bg-gray-50 transition-colors align-top">
+                <td class="px-6 py-4 font-medium text-gray-900">
+                  <a href={"/admin/users/#{user.id}/edit"} class="hover:text-indigo-600">
+                    {user.name}
+                  </a>
+                </td>
+                <td class="px-6 py-4 font-mono text-xs text-gray-500">
+                  {user.device_id || "—"}
+                </td>
+                <td class="px-6 py-4">
+                  <%= if user.otp_token do %>
+                    <.badge color="indigo">{user.otp_token}</.badge>
+                  <% else %>
+                    <span class="text-gray-400 text-xs">not generated</span>
+                  <% end %>
+                </td>
+                <td class="px-6 py-4">
+                  <span
+                    class="font-mono text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded
+                                   max-w-36 inline-block truncate align-middle"
+                    title={user.access_token}
+                  >
+                    {user.access_token}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex flex-wrap gap-1 min-w-32">
+                    <%= if user.shellies != [] do %>
+                      <.badge :for={shelly <- user.shellies} color="green">
+                        {shelly.name}
+                      </.badge>
+                    <% else %>
+                      <span class="text-xs text-gray-400">none</span>
+                    <% end %>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-xs text-gray-400">
+                  {Calendar.strftime(user.inserted_at, "%Y-%m-%d %H:%M")}
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <.dropdown id={"user-actions-#{user.id}"}>
+                    <.dropdown_item href={"/admin/users/#{user.id}/edit"}>Edit</.dropdown_item>
+                    <.dropdown_item href={"/admin/alerts?user_id=#{user.id}"}>
+                      View Alert History
+                    </.dropdown_item>
+                    <.dropdown_divider />
+                    <form action={"/admin/users/#{user.id}/generate_otp"} method="post">
+                      <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                      <.dropdown_item>Generate OTP Token</.dropdown_item>
+                    </form>
+                    <form action={"/admin/users/#{user.id}/regenerate_token"} method="post">
+                      <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                      <.dropdown_item>Regenerate Access Token</.dropdown_item>
+                    </form>
+                    <.dropdown_divider />
+                    <form action={"/admin/users/#{user.id}"} method="post">
+                      <input type="hidden" name="_method" value="delete" />
+                      <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+                      <.dropdown_item
+                        danger
+                        onclick={"return confirm('Delete user #{user.name}?')"}
+                      >
+                        Delete
+                      </.dropdown_item>
+                    </form>
+                  </.dropdown>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <.pagination
+        page={@page}
+        total_pages={@total_pages}
+        base_path={@base_path}
+        total_count={@total_count}
+        per_page={@per_page}
+      />
+    <% end %>
+  </div>
+</div>

@@ -102,8 +102,8 @@ defmodule ComnetWebsocketWeb.Admin.DeviceHTML do
             <%= for {key, label, value} <- active_filters(@filters) do %>
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs
                            font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-                <span class="font-semibold"><%= label %>:</span>
-                <span class="font-mono max-w-40 truncate" title={value}><%= value %></span>
+                <span class="font-semibold">{label}:</span>
+                <span class="font-mono max-w-40 truncate" title={value}>{value}</span>
                 <a
                   href={remove_filter_url(@filters, key)}
                   class="ml-0.5 text-indigo-400 hover:text-indigo-600 font-bold leading-none"
@@ -124,7 +124,7 @@ defmodule ComnetWebsocketWeb.Admin.DeviceHTML do
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <h3 class="text-base font-semibold text-gray-900">Results</h3>
-          <span class="text-xs text-gray-400"><%= @filtered_count %> devices</span>
+          <span class="text-xs text-gray-400">{@filtered_count} devices</span>
         </div>
 
         <%= if @devices == [] do %>
@@ -180,7 +180,7 @@ defmodule ComnetWebsocketWeb.Admin.DeviceHTML do
                         ]}
                         title={device.device_id}
                       >
-                        <%= device.device_id %>
+                        {device.device_id}
                       </a>
                     </td>
                     <td class="px-6 py-4">
@@ -196,7 +196,7 @@ defmodule ComnetWebsocketWeb.Admin.DeviceHTML do
                           ]}
                           title={device.user_id}
                         >
-                          <%= device.user_id %>
+                          {device.user_id}
                         </a>
                       <% else %>
                         <span class="text-gray-300 text-xs">—</span>
@@ -214,7 +214,7 @@ defmodule ComnetWebsocketWeb.Admin.DeviceHTML do
                             )
                           ]}
                         >
-                          <.badge><%= device.ip_address %></.badge>
+                          <.badge>{device.ip_address}</.badge>
                         </a>
                       <% else %>
                         <span class="text-gray-300 text-xs">—</span>
@@ -222,20 +222,20 @@ defmodule ComnetWebsocketWeb.Admin.DeviceHTML do
                     </td>
                     <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">
                       <%= if device.last_active_at do %>
-                        <%= Calendar.strftime(device.last_active_at, "%Y-%m-%d %H:%M") %>
+                        {Calendar.strftime(device.last_active_at, "%Y-%m-%d %H:%M")}
                       <% else %>
                         <span class="text-gray-300">—</span>
                       <% end %>
                     </td>
                     <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">
                       <%= if device.latest_started_at do %>
-                        <%= Calendar.strftime(device.latest_started_at, "%Y-%m-%d %H:%M") %>
+                        {Calendar.strftime(device.latest_started_at, "%Y-%m-%d %H:%M")}
                       <% else %>
                         <span class="text-gray-300">—</span>
                       <% end %>
                     </td>
                     <td class="px-6 py-4 text-xs text-gray-400 whitespace-nowrap">
-                      <%= Calendar.strftime(device.inserted_at, "%Y-%m-%d %H:%M") %>
+                      {Calendar.strftime(device.inserted_at, "%Y-%m-%d %H:%M")}
                     </td>
                   </tr>
                 <% end %>

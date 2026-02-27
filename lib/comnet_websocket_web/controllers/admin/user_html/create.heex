@@ -1,0 +1,37 @@
+<div class="max-w-lg">
+  <div class="mb-6">
+    <a href="/admin/users" class="text-sm text-indigo-600 hover:underline">
+      &larr; Back to Users
+    </a>
+  </div>
+  <form action="/admin/users" method="post">
+    <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+    <.card title="Create New User">
+      <div class="space-y-4">
+        <.input label="Name" name="user[name]" required placeholder="e.g. John Doe" />
+
+        <div :if={@all_shellies != []}>
+          <p class="block text-xs font-medium text-gray-700 mb-2">Assign Shellies</p>
+          <div class="space-y-1.5 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+            <label :for={s <- @all_shellies} class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="user[shelly_ids][]"
+                value={s.id}
+                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <span class="text-sm text-gray-700">{s.name}</span>
+              <span class="text-xs text-gray-400">({s.ip_address})</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <:footer>
+        <div class="ml-auto">
+          <.button>Create User</.button>
+        </div>
+      </:footer>
+    </.card>
+  </form>
+</div>
