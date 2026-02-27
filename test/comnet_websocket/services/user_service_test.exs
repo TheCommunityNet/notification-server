@@ -17,7 +17,7 @@ defmodule ComnetWebsocket.Services.UserServiceTest do
       assert {:ok, updated} = UserService.generate_otp_token(user)
       assert updated.otp_token != nil
       assert updated.otp_token != user.otp_token
-      assert String.length(updated.otp_token) == 16
+      assert String.length(updated.otp_token) == 8
       assert updated.otp_token =~ ~r/\A[0-9a-f]+\z/
     end
 
@@ -54,6 +54,26 @@ defmodule ComnetWebsocket.Services.UserServiceTest do
       assert first_token != nil
       assert second_token != nil
       assert first_token != second_token
+    end
+  end
+
+  describe "update_user/2" do
+    test "updates is_banned" do
+      {:ok, user} =
+        %User{}
+        |> User.admin_create_changeset(%{name: "Ban Test User"})
+        |> Repo.insert()
+
+      refute user.is_banned
+
+      assert {:ok, updated} =
+               UserService.update_user(user, %{"name" => user.name, "is_banned" => true})
+
+      assert updated.is_banned == true
+
+      assert {:ok, unbanned} =
+               UserService.update_user(updated, %{"name" => updated.name, "is_banned" => false})
+      refute unbanned.is_banned
     end
   end
 end

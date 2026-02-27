@@ -187,6 +187,62 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   end
 
   @doc """
+  Renders a toggle switch for boolean form fields (e.g. is_banned).
+
+  Use with a hidden input before it so unchecked state submits "false":
+  `<input type="hidden" name="user[is_banned]" value="false" />`
+  Then the switch checkbox has value "true"; when checked both are sent.
+
+  ## Examples
+
+      <input type="hidden" name="user[is_banned]" value="false" />
+      <.switch name="user[is_banned]" label="Banned" checked={@user.is_banned} />
+  """
+  attr :name, :string, required: true
+  attr :label, :string, required: true
+  attr :checked, :boolean, default: false
+  attr :id, :string, default: nil
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  def switch(assigns) do
+    assigns =
+      assign(assigns, :input_id, assigns[:id] || "switch-#{System.unique_integer([:positive])}")
+
+    ~H"""
+    <div class={["flex items-center justify-between gap-3", @class]}>
+      <label for={@input_id} class="block text-xs font-medium text-gray-700">
+        {@label}
+      </label>
+      <label
+        for={@input_id}
+        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2"
+      >
+        <input
+          type="checkbox"
+          id={@input_id}
+          name={@name}
+          value="true"
+          checked={@checked}
+          class="sr-only peer"
+          {@rest}
+        />
+        <span
+          class="absolute inset-0 rounded-full border border-gray-200 bg-gray-200 transition-colors peer-checked:border-indigo-600 peer-checked:bg-indigo-600"
+          aria-hidden="true"
+        >
+        </span>
+        <span
+          class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"
+          aria-hidden="true"
+        >
+        </span>
+      </label>
+    </div>
+    """
+  end
+
+  @doc """
   Renders a button with color and size variants.
 
   ## Examples

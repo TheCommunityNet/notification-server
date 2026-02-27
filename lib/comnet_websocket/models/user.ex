@@ -8,6 +8,7 @@ defmodule ComnetWebsocket.Models.User do
           device_id: String.t() | nil,
           otp_token: String.t() | nil,
           access_token: String.t() | nil,
+          is_banned: boolean(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
@@ -18,6 +19,7 @@ defmodule ComnetWebsocket.Models.User do
     field :device_id, :string
     field :otp_token, :string
     field :access_token, :string
+    field :is_banned, :boolean, default: false
 
     many_to_many :shellies, ComnetWebsocket.Models.Shelly,
       join_through: "user_shellies",
@@ -29,13 +31,13 @@ defmodule ComnetWebsocket.Models.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:name, :device_id, :otp_token, :access_token])
+    |> cast(attrs, [:name, :device_id, :otp_token, :access_token, :is_banned])
     |> validate_required([:name, :device_id, :otp_token, :access_token])
   end
 
   def update_changeset(user, attrs) do
     user
-    |> cast(attrs, [:name])
+    |> cast(attrs, [:name, :is_banned])
     |> validate_required([:name])
   end
 

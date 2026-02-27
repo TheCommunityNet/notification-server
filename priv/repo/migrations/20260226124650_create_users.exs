@@ -7,7 +7,7 @@ defmodule ComnetWebsocket.Repo.Migrations.CreateUsers do
       add :device_id, :string
       add :otp_token, :string
       add :access_token, :string
-
+      add :is_banned, :boolean, default: false
       timestamps(type: :utc_datetime)
     end
 

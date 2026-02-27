@@ -191,6 +191,21 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
 
       assert conn.status == 401
     end
+
+    test "returns 403 when user is banned", %{conn: conn} do
+      user = create_user()
+      {:ok, banned_user} = user |> User.update_changeset(%{is_banned: true}) |> Repo.update()
+      shelly = create_shelly()
+      assign_shelly(banned_user, shelly)
+
+      conn =
+        conn
+        |> auth_conn(banned_user)
+        |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
+
+      assert conn.status == 403
+      assert %{"error" => "Account is banned"} = json_response(conn, 403)
+    end
   end
 
   # ── POST /api/v1/alert/toggle ─────────────────────────────────────────────────
@@ -316,6 +331,21 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
         |> post(~p"/api/v1/alert/toggle")
 
       assert conn.status == 401
+    end
+
+    test "returns 403 when user is banned", %{conn: conn} do
+      user = create_user()
+      {:ok, banned_user} = user |> User.update_changeset(%{is_banned: true}) |> Repo.update()
+      shelly = create_shelly()
+      assign_shelly(banned_user, shelly)
+
+      conn =
+        conn
+        |> auth_conn(banned_user)
+        |> post(~p"/api/v1/alert/toggle")
+
+      assert conn.status == 403
+      assert %{"error" => "Account is banned"} = json_response(conn, 403)
     end
   end
 end

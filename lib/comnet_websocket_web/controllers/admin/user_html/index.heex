@@ -110,7 +110,11 @@
                       <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
                       <.dropdown_item>Generate OTP Token</.dropdown_item>
                     </form>
-                    <form :if={user.otp_token} action={"/admin/users/#{user.id}/clear_otp"} method="post">
+                    <form
+                      :if={user.otp_token}
+                      action={"/admin/users/#{user.id}/clear_otp"}
+                      method="post"
+                    >
                       <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
                       <.dropdown_item danger>Clear OTP Token</.dropdown_item>
                     </form>

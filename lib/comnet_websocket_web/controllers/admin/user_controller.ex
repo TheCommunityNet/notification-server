@@ -137,7 +137,11 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
 
       user ->
         shelly_ids = Map.get(user_params, "shelly_ids", []) |> List.wrap()
-        params_without_shellies = Map.delete(user_params, "shelly_ids")
+
+        params_without_shellies =
+          user_params
+          |> Map.delete("shelly_ids")
+          |> Map.put("is_banned", normalize_boolean(user_params["is_banned"]))
 
         case UserService.update_user(user, params_without_shellies) do
           {:ok, updated_user} ->
@@ -228,6 +232,12 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
         end
     end
   end
+
+  defp normalize_boolean(nil), do: false
+  defp normalize_boolean(true), do: true
+  defp normalize_boolean("true"), do: true
+  defp normalize_boolean(list) when is_list(list), do: "true" in list
+  defp normalize_boolean(_), do: false
 
   defp redirect_back(conn, fallback) do
     referer = get_req_header(conn, "referer") |> List.first()

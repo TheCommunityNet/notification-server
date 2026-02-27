@@ -12,6 +12,16 @@ defmodule ComnetWebsocketWeb.AlertController do
   """
   @spec toggle_alert(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def toggle_alert(conn, %{"shelly_id" => shelly_id}) do
+    if conn.assigns.current_user.is_banned do
+      conn
+      |> put_status(:forbidden)
+      |> json(%{error: "Account is banned"})
+    else
+      do_toggle_alert(conn, shelly_id)
+    end
+  end
+
+  defp do_toggle_alert(conn, shelly_id) do
     case AlertService.toggle_shelly(conn.assigns.current_user, shelly_id) do
       {:ok, :stopped} ->
         json(conn, %{success: true, action: "stopped", shelly_id: shelly_id})
@@ -48,6 +58,16 @@ defmodule ComnetWebsocketWeb.AlertController do
   """
   @spec toggle_all_alerts(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def toggle_all_alerts(conn, _params) do
+    if conn.assigns.current_user.is_banned do
+      conn
+      |> put_status(:forbidden)
+      |> json(%{error: "Account is banned"})
+    else
+      do_toggle_all_alerts(conn)
+    end
+  end
+
+  defp do_toggle_all_alerts(conn) do
     results =
       conn.assigns.current_user
       |> AlertService.toggle_all_shellies()
