@@ -1,42 +1,43 @@
 <div class="space-y-6">
   <.card>
     <form action="/admin/users" method="get" class="flex flex-wrap gap-4 items-end">
-      <div class="flex-1 min-w-48">
+      <div class="max-w-48 w-full">
         <.input
-          label="Search by name or device ID"
+          label="Search"
           name="search"
           value={@filters["search"]}
           placeholder="e.g. John or device-abc..."
         />
       </div>
-      <div class="w-48">
+      <div class="max-w-48 w-full">
         <.input
+          label="Shelly"
           type="select"
-          label="Filter by Shelly"
           name="shelly_id"
           value={@filters["shelly_id"]}
-          options={[{"All Shellies", ""} | Enum.map(@all_shellies, &{&1.name, &1.id})]}
+          options={[{"All Shellies", ""} | Enum.map(@all_shellies, &{&1.name, to_string(&1.id)})]}
         />
       </div>
-      <.button type="submit">Filter</.button>
-      <a
-        :if={@filters != %{"search" => "", "shelly_id" => ""} and @filters != %{}}
-        href="/admin/users"
-        class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600
+      <div class="ml-auto">
+        <.button type="submit">Search</.button>
+        <a
+          :if={@filters != %{"search" => "", "shelly_id" => ""} and @filters != %{}}
+          href="/admin/users"
+          class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600
                     hover:text-gray-900 transition-colors"
-      >
-        Clear
-      </a>
-      <a href="/admin/users/create" class="ml-auto">
-        <.button color="emerald" type="button">+ Create User</.button>
-      </a>
+        >
+          Clear
+        </a>
+      </div>
     </form>
   </.card>
 
   <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
       <h3 class="text-base font-semibold text-gray-900">All Users</h3>
-      <span class="text-xs text-gray-400">{@total_count} total</span>
+      <a href="/admin/users/create" class="ml-auto">
+        <.button size="sm" color="emerald" type="button">Create</.button>
+      </a>
     </div>
 
     <%= if @users == [] do %>
@@ -65,7 +66,7 @@
                     {user.name}
                   </a>
                 </td>
-                <td class="px-6 py-4 font-mono text-xs text-gray-500">
+                <td class="px-6 py-4 font-mono text-xs text-gray-500 min-w-30">
                   {user.device_id || "—"}
                 </td>
                 <td class="px-6 py-4">
@@ -95,7 +96,7 @@
                     <% end %>
                   </div>
                 </td>
-                <td class="px-6 py-4 text-xs text-gray-400">
+                <td class="px-6 py-4 text-xs text-gray-400 min-w-40">
                   {Calendar.strftime(user.inserted_at, "%Y-%m-%d %H:%M")}
                 </td>
                 <td class="px-6 py-4 text-right">

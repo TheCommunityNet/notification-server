@@ -63,6 +63,19 @@ defmodule ComnetWebsocket.Services.UserService do
     |> Repo.update()
   end
 
+  @spec set_user_shellies(User.t(), [String.t()]) ::
+          {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def set_user_shellies(user, shelly_ids) when is_list(shelly_ids) do
+    user = Repo.preload(user, :shellies)
+    ids = Enum.reject(List.wrap(shelly_ids), &(is_nil(&1) or &1 == ""))
+    shellies = if ids == [], do: [], else: Repo.all(from s in Shelly, where: s.id in ^ids)
+
+    user
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:shellies, shellies)
+    |> Repo.update()
+  end
+
   @spec update_user(User.t(), map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def update_user(user, attrs) do
     user
@@ -165,10 +178,12 @@ defmodule ComnetWebsocket.Services.UserService do
   defp maybe_filter_shelly(query, nil), do: query
   defp maybe_filter_shelly(query, ""), do: query
 
-  defp maybe_filter_shelly(query, shelly_id) do
+  defp maybe_filter_shelly(query, shelly_id) when is_binary(shelly_id) do
     from u in query,
       join: us in "user_shellies",
       on: us.user_id == u.id,
-      where: us.shelly_id == ^shelly_id
+      where: us.shelly_id == type(^shelly_id, UUIDv7)
   end
+
+  defp maybe_filter_shelly(query, _), do: query
 end

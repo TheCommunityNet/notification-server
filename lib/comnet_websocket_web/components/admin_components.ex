@@ -122,6 +122,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
   attr :color, :string, default: "indigo"
   attr :size, :string, default: "md"
   attr :class, :string, default: nil
+  attr :form, :string, default: nil
   attr :rest, :global
   slot :inner_block, required: true
 
@@ -131,6 +132,7 @@ defmodule ComnetWebsocketWeb.AdminComponents do
       type={@type}
       class={[button_base_class(@size), button_color_class(@color), @class]}
       {@rest}
+      form={@form}
     >
       {render_slot(@inner_block)}
     </button>
@@ -212,7 +214,10 @@ defmodule ComnetWebsocketWeb.AdminComponents do
       <div class="p-6">
         {render_slot(@inner_block)}
       </div>
-      <div :if={@footer != []} class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-xl flex flex-wrap gap-3 items-center">
+      <div
+        :if={@footer != []}
+        class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-xl flex flex-wrap gap-3 items-center"
+      >
         {render_slot(@footer)}
       </div>
     </div>

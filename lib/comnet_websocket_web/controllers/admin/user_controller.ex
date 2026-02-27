@@ -116,11 +116,28 @@ defmodule ComnetWebsocketWeb.Admin.UserController do
         conn |> put_flash(:error, "User not found.") |> redirect(to: ~p"/admin/users")
 
       user ->
-        case UserService.update_user(user, user_params) do
-          {:ok, _} ->
-            conn
-            |> put_flash(:info, "User updated successfully.")
-            |> redirect(to: ~p"/admin/users/#{id}/edit")
+        shelly_ids = Map.get(user_params, "shelly_ids", []) |> List.wrap()
+        params_without_shellies = Map.delete(user_params, "shelly_ids")
+
+        case UserService.update_user(user, params_without_shellies) do
+          {:ok, updated_user} ->
+            case UserService.set_user_shellies(updated_user, shelly_ids) do
+              {:ok, _} ->
+                conn
+                |> put_flash(:info, "User updated successfully.")
+                |> redirect(to: ~p"/admin/users/#{id}/edit")
+
+              {:error, _} ->
+                all_shellies = ShellyService.list_shellies()
+
+                conn
+                |> put_flash(:error, "Failed to update shelly assignments.")
+                |> render(:edit,
+                  page_title: "Edit User",
+                  user: updated_user,
+                  all_shellies: all_shellies
+                )
+            end
 
           {:error, _changeset} ->
             all_shellies = ShellyService.list_shellies()
