@@ -21,23 +21,37 @@ defmodule ComnetWebsocketWeb.AuthController do
       when is_binary(otp_token) and is_binary(device_id) do
     case UserService.verify_otp(otp_token, device_id) do
       {:ok, user} ->
-        json(conn, %{access_token: user.access_token})
+        json(conn, %{
+          success: true,
+          data: %{
+            access_token: user.access_token
+          }
+        })
 
       {:error, :invalid_otp} ->
         conn
         |> put_status(:unauthorized)
-        |> json(%{error: "Invalid or expired OTP token"})
+        |> json(%{
+          success: false,
+          error: "Invalid or expired OTP token"
+        })
 
       {:error, _changeset} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{error: "Failed to update user"})
+        |> json(%{
+          success: false,
+          error: "Failed to update user"
+        })
     end
   end
 
   def verify_otp(conn, _params) do
     conn
     |> put_status(:bad_request)
-    |> json(%{error: "otp_token and device_id are required"})
+    |> json(%{
+      success: false,
+      error: "otp_token and device_id are required"
+    })
   end
 end

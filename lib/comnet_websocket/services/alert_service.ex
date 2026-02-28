@@ -8,6 +8,7 @@ defmodule ComnetWebsocket.Services.AlertService do
 
   import Ecto.Query
 
+  require Logger
   alias ComnetWebsocket.Repo
   alias ComnetWebsocket.Models.{Shelly, ShellyAlert, User}
 
@@ -273,7 +274,7 @@ defmodule ComnetWebsocket.Services.AlertService do
 
       {pid, ip_address} ->
         Process.exit(pid, :kill)
-        relay_switch(ip_address, "off", 0)
+        Task.start(fn -> relay_switch(ip_address, "off", 0) end)
         :ok
     end
   end
@@ -289,7 +290,6 @@ defmodule ComnetWebsocket.Services.AlertService do
           if attempt > 1, do: Process.sleep(3_000)
           relay_switch(ip_address, "on")
           Process.sleep(5_000)
-          relay_switch(ip_address, "off", 0)
         end)
 
         Agent.update(@task_registry, &Map.delete(&1, shelly_id))
@@ -302,12 +302,12 @@ defmodule ComnetWebsocket.Services.AlertService do
   defp relay_switch(ip_address, state, timer \\ 5) do
     url =
       if state == "off" do
-        "http://#{ip_address}/relay/0?turn=off"
+        "http://#{ip_address}/rpc/Switch.Set?id=0&on=false"
       else
-        "http://#{ip_address}/relay/0?turn=#{state}&timer=#{timer}"
+        "http://#{ip_address}/rpc/Switch.Set?id=0&on=true&toggle_after=#{timer}"
       end
 
-    case Req.post(url) do
+    case Req.get(url, retry: false) do
       {:ok, %{status: status}} when status in 200..299 ->
         :ok
 

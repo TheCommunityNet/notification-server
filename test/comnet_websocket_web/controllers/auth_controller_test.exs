@@ -25,7 +25,9 @@ defmodule ComnetWebsocketWeb.AuthControllerTest do
           "device_id" => "my-device-001"
         })
 
-      assert %{"access_token" => access_token} = json_response(conn, 200)
+      assert %{"success" => true, "data" => %{"access_token" => access_token}} =
+               json_response(conn, 200)
+
       assert access_token == user.access_token
     end
 

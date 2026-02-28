@@ -15,7 +15,10 @@ defmodule ComnetWebsocketWeb.AlertController do
     if conn.assigns.current_user.is_banned do
       conn
       |> put_status(:forbidden)
-      |> json(%{error: "Account is banned"})
+      |> json(%{
+        success: false,
+        error: "Account is banned"
+      })
     else
       do_toggle_alert(conn, shelly_id)
     end
@@ -24,31 +27,41 @@ defmodule ComnetWebsocketWeb.AlertController do
   defp do_toggle_alert(conn, shelly_id) do
     case AlertService.toggle_shelly(conn.assigns.current_user, shelly_id) do
       {:ok, :stopped} ->
-        json(conn, %{success: true, action: "stopped", shelly_id: shelly_id})
+        json(conn, %{action: "stopped", shelly_id: shelly_id})
 
       {:ok, alert} ->
         json(conn, %{
           success: true,
-          action: "started",
-          alert_id: alert.id,
-          shelly_id: alert.shelly_id,
-          triggered_at: alert.inserted_at
+          data: %{
+            alert_id: alert.id,
+            shelly_id: alert.shelly_id,
+            triggered_at: alert.inserted_at
+          }
         })
 
       {:error, :not_found} ->
         conn
         |> put_status(:not_found)
-        |> json(%{error: "Shelly not found"})
+        |> json(%{
+          success: false,
+          error: "Shelly not found"
+        })
 
       {:error, :forbidden} ->
         conn
         |> put_status(:forbidden)
-        |> json(%{error: "You do not have access to this shelly"})
+        |> json(%{
+          success: false,
+          error: "You do not have access to this shelly"
+        })
 
       {:error, _changeset} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{error: "Failed to record alert"})
+        |> json(%{
+          success: false,
+          error: "Failed to record alert"
+        })
     end
   end
 
@@ -61,7 +74,10 @@ defmodule ComnetWebsocketWeb.AlertController do
     if conn.assigns.current_user.is_banned do
       conn
       |> put_status(:forbidden)
-      |> json(%{error: "Account is banned"})
+      |> json(%{
+        success: false,
+        error: "Account is banned"
+      })
     else
       do_toggle_all_alerts(conn)
     end
@@ -78,10 +94,9 @@ defmodule ComnetWebsocketWeb.AlertController do
 
           {:ok, alert} ->
             %{
-              shelly_id: shelly_id,
-              shelly_name: name,
               success: true,
               action: "started",
+              shelly_id: shelly_id,
               alert_id: alert.id
             }
 
@@ -90,6 +105,9 @@ defmodule ComnetWebsocketWeb.AlertController do
         end
       end)
 
-    json(conn, %{data: results})
+    json(conn, %{
+      success: true,
+      data: results
+    })
   end
 end

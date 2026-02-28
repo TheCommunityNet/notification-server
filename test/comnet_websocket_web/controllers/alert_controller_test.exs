@@ -60,17 +60,12 @@ defmodule ComnetWebsocketWeb.AlertControllerTest do
         |> auth_conn(user)
         |> post(~p"/api/v1/alert/#{shelly.id}/toggle")
 
-      assert %{
-               "success" => true,
-               "action" => "started",
-               "alert_id" => alert_id,
-               "shelly_id" => shelly_id,
-               "triggered_at" => triggered_at
-             } = json_response(conn, 200)
+      assert %{"success" => true, "data" => data} = json_response(conn, 200)
 
-      assert is_binary(alert_id)
-      assert shelly_id == to_string(shelly.id)
-      assert is_binary(triggered_at)
+      assert data["action"] == "started"
+      assert is_binary(data["alert_id"])
+      assert data["shelly_id"] == to_string(shelly.id)
+      assert is_binary(data["triggered_at"])
     end
 
     test "saves the alert record in the database on start", %{conn: conn} do

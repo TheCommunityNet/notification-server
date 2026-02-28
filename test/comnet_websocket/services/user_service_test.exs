@@ -73,6 +73,7 @@ defmodule ComnetWebsocket.Services.UserServiceTest do
 
       assert {:ok, unbanned} =
                UserService.update_user(updated, %{"name" => updated.name, "is_banned" => false})
+
       refute unbanned.is_banned
     end
   end

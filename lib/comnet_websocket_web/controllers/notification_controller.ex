@@ -65,17 +65,27 @@ defmodule ComnetWebsocketWeb.NotificationController do
          {:ok, notification} <- NotificationService.save_notification(notification_params) do
       message = NotificationService.build_websocket_message(notification)
       broadcast_notification(params, message)
-      json(conn, %{message: message})
+
+      json(conn, %{
+        success: true,
+        data: message
+      })
     else
       {:error, :invalid_params} ->
         conn
         |> put_status(:bad_request)
-        |> json(%{error: Constants.error_invalid_params()})
+        |> json(%{
+          success: false,
+          error: Constants.error_invalid_params()
+        })
 
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{error: changeset})
+        |> json(%{
+          success: false,
+          error: changeset
+        })
     end
   end
 
@@ -99,12 +109,18 @@ defmodule ComnetWebsocketWeb.NotificationController do
         )
       end)
 
-      json(conn, %{message: message})
+      json(conn, %{
+        success: true,
+        data: message
+      })
     else
       {:error, :invalid_params} ->
         conn
         |> put_status(:bad_request)
-        |> json(%{error: Constants.error_invalid_params()})
+        |> json(%{
+          success: false,
+          error: Constants.error_invalid_params()
+        })
     end
   end
 

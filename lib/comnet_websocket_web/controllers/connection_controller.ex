@@ -28,9 +28,12 @@ defmodule ComnetWebsocketWeb.ConnectionController do
       end)
 
     json(conn, %{
-      total: guest_count + user_count,
-      guest_count: guest_count,
-      user_count: user_count
+      success: true,
+      data: %{
+        total: guest_count + user_count,
+        guest_count: guest_count,
+        user_count: user_count
+      }
     })
   end
 
@@ -75,7 +78,8 @@ defmodule ComnetWebsocketWeb.ConnectionController do
       end)
 
     json(conn, %{
-      users: users
+      success: true,
+      data: users
     })
   end
 end

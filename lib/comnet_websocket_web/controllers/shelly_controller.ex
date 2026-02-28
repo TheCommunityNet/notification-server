@@ -12,6 +12,10 @@ defmodule ComnetWebsocketWeb.ShellyController do
   @spec index(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def index(conn, _params) do
     shellies = AlertService.list_user_shellies(conn.assigns.current_user)
-    json(conn, %{data: shellies})
+
+    json(conn, %{
+      success: true,
+      data: shellies
+    })
   end
 end
